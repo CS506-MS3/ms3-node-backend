@@ -1,22 +1,20 @@
-var express = require('express')
-var bodyParser = require('body-parser')
-var app = express()
-var router = express.Router()
+var express = require('express');
+var bodyParser = require('body-parser');
+var app = express();
+var router = express.Router();
 
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-router.route('/users')
-	.post(function(req, res) {
-		res.json({ message: 'POST to localhost:3000/api/users, will be replaced by node module' })
-	})
+// TODO /api/users
+var userController = require('./controller/user_controller'); // import user controller module (user_controller.js) from controller dir
+router.use('/users', userController); // mount /api/users to user controller module
 
-
-
-router.route('/users/:id/activate')
-	.post(function(req, res) {
-		res.json({ message: 'POST to localhost:3000/api/users/:id/activate', id: req.params.id })
-	})
+// TODO /api/authenticate
+// TODO /api/access
+// TODO /api/employee
+// TODO /api/
+// TODO /api/blacklist
 
 app.use('/api', router)
 
