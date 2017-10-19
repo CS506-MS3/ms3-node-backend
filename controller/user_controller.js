@@ -107,7 +107,13 @@ router.route('/:id/deactivate')
 			  		res.status(404);
 			  		res.json({ message: 'Not found' });
 			  	} else {
-			  		data = entity;
+			  		if (entity.active == false) {
+			  			valid = false;
+						res.status(400);
+						res.json({ message: 'Error Updating Entity' });
+			  		} else {
+			  			data = entity;
+			  		}
 			  		console.log(entity);
 			  	}
 
