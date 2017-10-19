@@ -85,22 +85,28 @@ router.route('/')
 
 router.route('/:id/deactivate')
 	.put(function(req, res){
+		var valid = true;
 		console.log(req.params.id);
 		if (req.body.active === undefined || req.body.active == false) {
+			valid = false;
 			res.status(400);
 			res.json({ message: 'Error' });
 		}
-		var valid = true;
-		var key = datastore.key('User_V1', req.params.id);
+		
+		var key = '';
 		var data = '';
-		datastore.get(key, function(err, entity) {
-		  	if (err || entity.active == false) {
-		  		valid = false;
-		  		res.status(400);
-		  		res.json({ message: 'Error' });
-		  	}
-		  	data = entity;
-		});
+		if (valid == true) {
+			key = datastore.key('User_V1', req.params.id);
+			
+			datastore.get(key, function(err, entity) {
+			  	if (err || entity.active == false) {
+			  		valid = false;
+			  		res.status(400);
+			  		res.json({ message: 'Error' });
+			  	}
+			  	data = entity;
+			});
+		}
 
 		if (valid == true) {
 			data.active = false;
