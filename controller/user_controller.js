@@ -82,4 +82,10 @@ router.route('/')
 		}
 	});
 
+
+router.route('/:id')
+	.get(function(req, res){
+		res.json({ message: 'In GET /api/user/'+req.params.id+' as id'})
+	});
+
 module.exports = router;
