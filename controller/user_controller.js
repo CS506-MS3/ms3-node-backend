@@ -96,7 +96,7 @@ router.route('/:id/deactivate')
 		var key = '';
 		var data = '';
 		if (valid == true) {
-			key = datastore.key('User_V1', req.params.id);
+			key = datastore.key('User_V1', ''+req.params.id);
 
 			console.log(key);
 
