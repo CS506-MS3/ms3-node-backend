@@ -11,8 +11,6 @@ describe('/api/users Test', function() {
 			.end(function(err, res){
 				if (err)
 					done(err);
-				res.body.should.have.property('message'); // Change 'message' to 'foobar' to see fail example
-				res.body.message.should.equal('Testing GET /api/users'); // Change 'Testing ...' to 'foobar' to see fail example
 				done();
 			});
     });

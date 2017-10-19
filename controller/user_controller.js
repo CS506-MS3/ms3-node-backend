@@ -4,10 +4,7 @@ var bodyParser = require('body-parser');
 var secret = require('../secret.json')
 
 const Datastore = require('@google-cloud/datastore');
-const datastore = Datastore({
-  projectId: secret.data.projectId
-});
-const kind = 'User_V1';
+const datastore = Datastore();
 
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
@@ -21,10 +18,19 @@ router.use(function timeLog (req, res, next) {
 // controller for /api/users
 router.route('/')
 	.get(function(req, res) {
-		//TODO Access Datastore
-		res.status(200);
-		res.json({ message: 'Testing GET /api/users'});
-	})
+		const query = datastore.createQuery('User_V1');
+                datastore.runQuery(query)
+                        .then((results) => {
+                                const users = results[0];
+                                res.status(200);
+                                res.json(users)
+                        })
+                        .catch((err) => {
+                                console.error('ERROR:', err);
+                                res.status(500);
+                                res.json({ message: "Error" })
+                        });
+ 	})
 
 	.post(function(req, res) {
 		//TODO Access & Update Datastore
@@ -32,19 +38,5 @@ router.route('/')
 		res.status(200);
 		res.json({ message: 'Testing POST /api/users'});
 	});
-
-router.route('/:id')
-	.get(function(req, res) {
-		//TODO Access Datastore
-		// datastore.get(req.params.id, function(err, entity) {
-		// 	if (err) {
-		// 		res.status(500)
-		// 		res.json({ message : "Error" })
-		// 	} else {
-		// 		res.status(200);
-		// 		res.json(entity);
-		// 	}
-		// });
-	})
 
 module.exports = router;
