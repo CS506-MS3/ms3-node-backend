@@ -110,25 +110,23 @@ router.route('/:id/deactivate')
 			  		data = entity;
 			  		console.log(entity);
 			  	}
-			});
-		}
-		
-		console.log(valid)
 
-		if (valid == true) {
-			console.log('In update');
-			data.active = false;
+			  	if (valid == true) {
+					console.log('In update');
+					data.active = false;
 
-			datastore.save({
-				key: key,
-				data: data
-			}, function(err, entity) {
-				if (!err) {
-					res.status(200);
-					res.json({ message: 'Success' });
-				} else {
-					res.status(400);
-			  		res.json({ message: 'Error' });
+					datastore.save({
+						key: key,
+						data: data
+					}, function(err, entity) {
+						if (!err) {
+							res.status(200);
+							res.json({ message: 'Success' });
+						} else {
+							res.status(400);
+					  		res.json({ message: 'Error' });
+						}
+					});
 				}
 			});
 		}
