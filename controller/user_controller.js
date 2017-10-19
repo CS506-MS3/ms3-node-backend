@@ -19,24 +19,39 @@ router.use(function timeLog (req, res, next) {
 router.route('/')
 	.get(function(req, res) {
 		const query = datastore.createQuery('User_V1');
-                datastore.runQuery(query)
-                        .then((results) => {
-                                const users = results[0];
-                                res.status(200);
-                                res.json(users)
-                        })
-                        .catch((err) => {
-                                console.error('ERROR:', err);
-                                res.status(500);
-                                res.json({ message: "Error" })
-                        });
+		datastore.runQuery(query)
+                       	.then((results) => {
+                               	const users = results[0];
+                            	res.status(200);
+				res.json(users);
+                       	})
+			.catch((err) => {
+ 				console.error('ERROR:', err);
+                        	res.status(500);
+                       		res.json({ message: "Error" });
+			});
  	})
 
 	.post(function(req, res) {
 		//TODO Access & Update Datastore
+		var key = datastore.key(['User_V1']);
 
-		res.status(200);
-		res.json({ message: 'Testing POST /api/users'});
+		var data = {
+		
+		};
+
+		datastore.save({
+		  	key: key,
+ 			data: data
+		}, function(err) {
+  			if (!err) {
+    				// Record saved successfully.
+ 			}
+		}).catch((err) => {
+                        console.error('ERROR:', err);
+                        res.status(500);
+                        res.json({ message: "Error" })
+                });
 	});
 
 module.exports = router;
