@@ -84,7 +84,7 @@ router.route('/')
 
 
 router.route('/:id/deactivate')
-	.put(function(req, res){
+	.post(function(req, res){
 		var valid = true;
 
 		if (req.body.active === undefined || req.body.active != false) {
@@ -93,47 +93,45 @@ router.route('/:id/deactivate')
 			res.json({ message: 'Missing valid property' });
 		}
 		
-		var key = '';
-		var data = '';
+		var key = {
+			kind: 'User_V1',
+			id: req.params.id
+		};
+		var data = {};
+
 		if (valid == true) {
-			key = {
-				kind: 'User_V1',
-				id: req.params.id
-			};
-
-			console.log(key);
-
 			datastore.get(key, function(err, entity) {
-			  	if (err || entity === undefined) {
+				if (err) { // If there is datastore error
+					valid = false;
+					console.error(err);
+			  		res.status(500);
+			  		res.json({ message: 'Internal Error' });
+				} else if (entity === undefined) { // If user entity is not found
 			  		valid = false;
-			  		console.log(valid)
 			  		res.status(404);
 			  		res.json({ message: 'Not found' });
 			  	} else {
-			  		if (entity.active == false) {
+			  		if (entity.active == false) { // If user entity is already inactive
 			  			valid = false;
 						res.status(400);
 						res.json({ message: 'Error Updating Entity' });
-			  		} else {
+			  		} else { // If active user entity found
 			  			data = entity;
 			  		}
-			  		console.log(entity);
 			  	}
-
 			  	if (valid == true) {
-					console.log('In update');
 					data.active = false;
-
 					datastore.save({
 						key: key,
 						data: data
 					}, function(err, entity) {
-						if (!err) {
+						if (!err) { // If update success
 							res.status(200);
-							res.json({ message: 'Success' });
-						} else {
-							res.status(400);
-					  		res.json({ message: 'Error' });
+							res.json(entity);
+						} else { // If there is datastore error
+							console.error(err);
+							res.status(500);
+					  		res.json({ message: 'Internal Error' });
 						}
 					});
 				}
