@@ -85,7 +85,8 @@ router.route('/')
 
 router.route('/:id/deactivate')
 	.put(function(req, res){
-		if (req.body.active != false) {
+		console.log(req.params.id);
+		if (req.body.active === undefined || req.body.active == false) {
 			res.status(400);
 			res.json({ message: 'Error' });
 		}
