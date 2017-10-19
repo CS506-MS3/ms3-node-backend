@@ -23,7 +23,7 @@ router.route('/')
                        	.then((results) => {
                                	const users = results[0];
                             	res.status(200);
-				res.json(users);
+								res.json(users);
                        	})
 			.catch((err) => {
  				console.error('ERROR:', err);
@@ -82,6 +82,61 @@ router.route('/')
 		}
 	});
 
+router.route('/:id/activate')
+	.post(function(req, res){
+		var valid = true;
+
+		if (req.body.active === undefined || req.body.active != true) {
+			valid = false;
+			res.status(400);
+			res.json({ message: 'Missing valid property' });
+		}
+		
+		var key = {
+			kind: 'User_V1',
+			id: req.params.id
+		};
+		var data = {};
+
+		if (valid == true) {
+			datastore.get(key, function(err, entity) {
+				if (err) { // If there is datastore error
+					valid = false;
+					console.error(err);
+			  		res.status(500);
+			  		res.json({ message: 'Internal Error' });
+				} else if (entity === undefined) { // If user entity is not found
+			  		valid = false;
+			  		res.status(404);
+			  		res.json({ message: 'Not found' });
+			  	} else {
+			  		if (entity.active == true) { // If user entity is already active
+			  			valid = false;
+						res.status(400);
+						res.json({ message: 'Error Updating Entity' });
+			  		} else { // If active user entity found
+			  			data = entity;
+			  		}
+			  	}
+			  	if (valid == true) {
+					data.active = true;
+					datastore.save({
+						key: key,
+						data: data
+					}, function(err, entity) {
+						if (!err) { // If update success
+							res.status(200);
+							res.json(data);
+						} else { // If there is datastore error
+							console.error(err);
+							res.status(500);
+					  		res.json({ message: 'Internal Error' });
+						}
+					});
+				}
+			});
+		}
+	});
 
 router.route('/:id/deactivate')
 	.post(function(req, res){
