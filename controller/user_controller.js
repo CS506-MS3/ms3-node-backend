@@ -105,13 +105,15 @@ router.route('/:id/deactivate')
 			  		valid = false;
 			  		res.status(404);
 			  		res.json({ message: 'Not found' });
+			  	} else {
+			  		data = entity;
+			  		console.log(entity);
 			  	}
-			  	data = entity;
-			  	console.log(entity);
 			});
 		}
 
 		if (valid == true) {
+			console.log('In update');
 			data.active = false;
 
 			datastore.save({
