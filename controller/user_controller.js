@@ -83,9 +83,40 @@ router.route('/')
 	});
 
 
-router.route('/:id')
-	.get(function(req, res){
-		res.json({ message: 'In GET /api/user/'+req.params.id+' as id'})
+router.route('/:id/deactivate')
+	.put(function(req, res){
+		if (req.body.active != false) {
+			res.status(400);
+			res.json({ message: 'Error' });
+		}
+		var valid = true;
+		var key = datastore.key('User_V1', req.params.id);
+		var data = '';
+		datastore.get(key, function(err, entity) {
+		  	if (err || entity.active == false) {
+		  		valid = false;
+		  		res.status(400);
+		  		res.json({ message: 'Error' });
+		  	}
+		  	data = entity;
+		});
+
+		if (valid == true) {
+			data.active = false;
+
+			datastore.save({
+				key: key,
+				data: data
+			}, function(err, entity) {
+				if (!err) {
+					res.status(200);
+					res.json({ message: 'Success' });
+				} else {
+					res.status(400);
+			  		res.json({ message: 'Error' });
+				}
+			});
+		}
 	});
 
 module.exports = router;
