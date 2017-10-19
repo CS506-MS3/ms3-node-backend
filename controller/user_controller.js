@@ -103,6 +103,7 @@ router.route('/:id/deactivate')
 			datastore.get(key, function(err, entity) {
 			  	if (err || entity === undefined) {
 			  		valid = false;
+			  		console.log(valid)
 			  		res.status(404);
 			  		res.json({ message: 'Not found' });
 			  	} else {
@@ -111,6 +112,8 @@ router.route('/:id/deactivate')
 			  	}
 			});
 		}
+		
+		console.log(valid)
 
 		if (valid == true) {
 			console.log('In update');
