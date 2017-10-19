@@ -127,7 +127,7 @@ router.route('/:id/deactivate')
 					}, function(err, entity) {
 						if (!err) { // If update success
 							res.status(200);
-							res.json(entity);
+							res.json(data);
 						} else { // If there is datastore error
 							console.error(err);
 							res.status(500);
