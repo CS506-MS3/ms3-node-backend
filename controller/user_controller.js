@@ -86,24 +86,27 @@ router.route('/')
 router.route('/:id/deactivate')
 	.put(function(req, res){
 		var valid = true;
-		console.log(req.params.id);
+
 		if (req.body.active === undefined || req.body.active != false) {
 			valid = false;
 			res.status(400);
-			res.json({ message: 'Error' });
+			res.json({ message: 'Missing valid property' });
 		}
 		
 		var key = '';
 		var data = '';
 		if (valid == true) {
 			key = datastore.key('User_V1', req.params.id);
-			
+
+			console.log(key);
+
 			datastore.get(key, function(err, entity) {
 			  	if (err || entity.active == false) {
 			  		valid = false;
 			  		res.status(400);
 			  		res.json({ message: 'Error' });
 			  	}
+			  	console.log(entity);
 			  	data = entity;
 			});
 		}
