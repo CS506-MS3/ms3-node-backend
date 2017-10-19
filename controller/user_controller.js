@@ -39,23 +39,20 @@ router.route('/')
 		var data = "";
 		try {
 			if (
-				req.body.bid === undefined || req.body.wishlist === undefined ||
-				req.body.access === undefined || req.body.phone === undefined ||
-				req.body.listing === undefined || req.body.stripe_id === undefined ||
-				req.body.active === undefined || req.body.email === undefined ||
+				req.body.email === undefined ||
 				req.body.password_hash === undefined || req.body.notification === undefined
 			) {
 				throw 'Missing params';
 			}
 			key = datastore.key(['User_V1']);
 			data = {
-				bid : req.body.bid,
-				wishlist : req.body.wishlist,
-				access : req.body.access,
-				phone : req.body.phone,
-				listing : req.body.listing,
-				stripe_id : req.body.stripe_id,
-				active : req.body.active,
+				bid : {},
+				wishlist : [],
+				access : {},
+				phone : (req.body.phone === undefined) ? 0 : req.body.phone,
+				listing : [],
+				stripe_id : 0,
+				active : false,
 				email : req.body.email,
 				password_hash : req.body.password_hash,
 				notification : req.body.notification
@@ -70,6 +67,7 @@ router.route('/')
 		if (valid) {
 			datastore.save({
 			  	key: key,
+				excludeFromIndexes: ["phone", "password_hash"],
  				data: data
 			}, function(err) {
   				if (!err) {
