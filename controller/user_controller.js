@@ -101,13 +101,19 @@ router.route('/:id/deactivate')
 			console.log(key);
 
 			datastore.get(key, function(err, entity) {
-			  	if (err || entity.active == false) {
+			  	if (err || entity === undefined) {
+			  		valid = false;
+			  		res.status(404);
+			  		res.json({ message: 'Not found' });
+			  	}
+			  	if (entity.active == false) {
 			  		valid = false;
 			  		res.status(400);
-			  		res.json({ message: 'Error' });
+			  		res.json({ message: 'Already inactive' });
+			  	} else {
+			  		data = entity;
 			  	}
 			  	console.log(entity);
-			  	data = entity;
 			});
 		}
 
