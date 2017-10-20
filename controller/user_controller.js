@@ -17,6 +17,7 @@ router.use(function timeLog (req, res, next) {
 
 // controller for /api/users
 router.route('/')
+	// GET /api/users
 	.get(function(req, res) {
 		const query = datastore.createQuery('User_V1');
 		datastore.runQuery(query)
@@ -32,6 +33,7 @@ router.route('/')
 			});
  	})
 
+	// POST	/api/users
 	.post(function(req, res) {
 		//TODO Access & Update Datastore
 		var valid = true;
@@ -83,7 +85,7 @@ router.route('/')
 	});
 
 router.route('/:id/activate')
-	.post(function(req, res){
+	.postt(function(req, res){
 		var valid = true;
 
 		if (req.body.active === undefined || req.body.active != true) {
