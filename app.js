@@ -16,6 +16,10 @@ router.use('/users', userController); // mount /api/users to user controller mod
 // TODO /api/
 // TODO /api/blacklist
 
+app.get('/', function(req, res){
+	res.send('Hello');
+});
+
 app.use('/api', router)
 
 app.listen(3000)
