@@ -85,7 +85,8 @@ router.route('/')
 	});
 
 router.route('/:id/activate')
-	.postt(function(req, res){
+	// PUT /api/users/:id/activate
+	.put(function(req, res){
 		var valid = true;
 
 		if (req.body.active === undefined || req.body.active != true) {

@@ -11,6 +11,12 @@ router.use(bodyParser.json());
 
 // called everytime user_controller is called
 router.use(function timeLog (req, res, next) {
-  console.log('In User Controller @ Time: ', Date.now());
+  console.log('In Activate Controller @ Time: ', Date.now());
   next();
 });
+
+router.route('/:token')
+	
+	.get(function(req, res){
+		console.log(req.params.token);
+	});
