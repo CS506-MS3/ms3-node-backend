@@ -142,7 +142,8 @@ router.route('/:id/activate')
 	});
 
 router.route('/:id/deactivate')
-	.post(function(req, res){
+	// PUT /api/users/:id/deactivate
+	.put(function(req, res){
 		var valid = true;
 
 		if (req.body.active === undefined || req.body.active != false) {
