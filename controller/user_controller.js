@@ -46,7 +46,7 @@ router.route('/')
 			) {
 				throw 'Missing params';
 			}
-			/*const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
+			const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
 			datastore.runQuery(query)
                        	.then((results) => {
                                	const users = results[0];
@@ -56,7 +56,7 @@ router.route('/')
  								console.error('ERROR:', err);
                         		res.status(500);
                        			res.json({ message: "Error" });
-			});*/
+			});
 
 			key = datastore.key(['User_V1']);
 			data = {
@@ -74,8 +74,7 @@ router.route('/')
 		} catch (err){
 			valid = false;
 			res.status(400);
-                        console.error("Error:", err);
-			res.json({ message: 'Error'});
+			res.json({ message: 'Invalid Syntax'});
 		}
 		
 		if (valid) {
