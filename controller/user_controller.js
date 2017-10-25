@@ -19,13 +19,13 @@ router.route('/')
                                	const users = results[0];
                             	res.status(200);
 								res.json(users);
-								return;
+								next();
                        	})
 						.catch((err) => {
 			 				console.error('ERROR:', err);
 			                    res.status(500);
 			                    res.json({ message: "Error" });
-			                    return;
+			                    next();
 						});
  	})
 
@@ -48,13 +48,13 @@ router.route('/')
                                	if (users.length != 0) {
                                		res.status(409);
                                		res.json({ message: "User Already Exists" });
-                               		return;
+                               		next();
                                	}
                        	})
 						.catch((err) => {
                         		res.status(500);
                        			res.json({ message: "Error" });
-                       			return;
+                       			next();
 						});
 
 			key = datastore.key(['User_V1']);
@@ -73,7 +73,7 @@ router.route('/')
 		} catch (err){
 			res.status(400);
 			res.json({ message: 'Invalid Syntax'});
-			return;
+			next();
 		}
 		datastore.save({
 			  	key: key,
@@ -83,11 +83,11 @@ router.route('/')
   				if (!err) {
     				res.status(201);
 					res.json({ message: "Created" });
-					return;
+					next();
 	 			} else {
 					res.status(500);
 					res.json({ message: "Error" });
-					return;
+					next();
 				}
 		});
 	});
