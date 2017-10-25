@@ -48,13 +48,15 @@ router.route('/')
                                	if (users.length != 0) {
                                		res.status(409);
                                		res.json({ message: "User Already Exists" });
-                               		return next();
+                               		console.log("In then");
+                               		return;
                                	}
                        	})
 						.catch((err) => {
                         		res.status(500);
                        			res.json({ message: "Error" });
-                       			return next();
+                       			console.log("In catch");
+                       			return;
 						});
 
 			key = datastore.key(['User_V1']);
@@ -73,7 +75,8 @@ router.route('/')
 		} catch (err){
 			res.status(400);
 			res.json({ message: 'Invalid Syntax'});
-			return next();
+			console.log("In err");
+			return;
 		}
 		datastore.save({
 			  	key: key,
@@ -83,11 +86,13 @@ router.route('/')
   				if (!err) {
     				res.status(201);
 					res.json({ message: "Created" });
-					return next();
+					console.log("In save");
+					return;
 	 			} else {
 					res.status(500);
 					res.json({ message: "Error" });
-					return next();
+					console.log("In save err");
+					return;
 				}
 		});
 	});
