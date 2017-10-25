@@ -59,6 +59,7 @@ router.route('/')
 								}
 						});
 			} catch (err){
+				console.log(err.message);
 				return next(err);
 			}
 			console.log("Before next");
