@@ -37,7 +37,7 @@ router.route('/')
 				){ 
 					res.status(400);
 					res.json({ message: "Invalid Syntax" });
-					throw 'Invalid Syntax';
+					throw new Error('Invalid Syntax');
 				}
 				const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
 				datastore.runQuery(query)
@@ -46,13 +46,17 @@ router.route('/')
 		                        if (users.length != 0) {
 		                               	res.status(409);
 		                               	res.json({ message: "User Already Exists" });
-		                               	throw 'User Already Exists';
+		                               	throw new Error('User Already Exists');
 		                        }
 		                })
 						.catch((err) => {
-								res.status(500);
-								res.json({ message: "Error" });
-								throw 'Internal Server Error';
+								if (err.message != 'User Already Exists') {
+									res.status(500);
+									res.json({ message: "Error" });
+									throw new Error('Internal Server Error');
+								} else {
+									throw err;
+								}
 						});
 			} catch (err){
 				return next(err);
