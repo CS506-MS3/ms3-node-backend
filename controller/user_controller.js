@@ -46,16 +46,16 @@ router.route('/')
                        	.then((results) => {
                                	const users = results[0];
                                	if (users.length != 0) {
+                               		console.log("In then");
                                		res.status(409);
                                		res.json({ message: "User Already Exists" });
-                               		console.log("In then");
                                		return;
                                	}
                        	})
 						.catch((err) => {
+								console.log("In catch");
                         		res.status(500);
                        			res.json({ message: "Error" });
-                       			console.log("In catch");
                        			return;
 						});
 
@@ -73,9 +73,9 @@ router.route('/')
 				notification : req.body.notification
 			};
 		} catch (err){
+			console.log("In err");
 			res.status(400);
 			res.json({ message: 'Invalid Syntax'});
-			console.log("In err");
 			return;
 		}
 		datastore.save({
@@ -84,14 +84,14 @@ router.route('/')
  				data: data
 		}, function(err) {
   				if (!err) {
+  					console.log("In save");
     				res.status(201);
 					res.json({ message: "Created" });
-					console.log("In save");
 					return;
 	 			} else {
+	 				console.log("In save err");
 					res.status(500);
 					res.json({ message: "Error" });
-					console.log("In save err");
 					return;
 				}
 		});
