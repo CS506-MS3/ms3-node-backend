@@ -29,7 +29,7 @@ router.route('/')
 
 	// POST	/api/users
 	.post(function(req, res) {
-			//TODO Access & Update Datastore
+			//TODO Auth
 			try {
 				if (
 					req.body.email === undefined ||
@@ -80,13 +80,12 @@ router.route('/')
 								res.json({ message: "Error" });
 						});
 			} catch (err){
-				if (err.message === 'Invalid Syntax') {
-				} else {
+				if (err.message !== 'Invalid Syntax') {
 						res.status(500);
 						res.json({ message: "Error" });
 				}
 			}
-		});
+	});
 
 router.route('/:id/activate')
 	// PUT /api/users/:id/activate
