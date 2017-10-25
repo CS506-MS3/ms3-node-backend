@@ -50,12 +50,12 @@ router.route('/')
 			datastore.runQuery(query)
                        	.then((results) => {
                                	const users = results[0];
-                            	console.log(users)
+                            	//console.log(users)
                        	})
 						.catch((err) => {
  								console.error('ERROR:', err);
                         		res.status(500);
-                       			res.json({ message: "Error" });
+                       			//res.json({ message: "Error" });
 			});
 
 			key = datastore.key(['User_V1']);
