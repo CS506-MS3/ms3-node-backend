@@ -19,13 +19,11 @@ router.route('/')
                                	const users = results[0];
                             	res.status(200);
 								res.json(users);
-								return next();
                        	})
 						.catch((err) => {
 			 				console.error('ERROR:', err);
 			                    res.status(500);
 			                    res.json({ message: "Error" });
-			                    return next();
 						});
  	})
 
@@ -45,7 +43,7 @@ router.route('/')
 				valid = false;
 			}
 
-			if (valid) {
+			if (valid == true) {
 				const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
 				datastore.runQuery(query)
 	                       	.then((results) => {
@@ -61,7 +59,7 @@ router.route('/')
 							});
 			}
 
-			if (valid) {
+			if (valid == true) {
 				key = datastore.key(['User_V1']);
 				data = {
 					bid : {},
