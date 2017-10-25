@@ -55,6 +55,7 @@ router.route('/')
 									res.json({ message: "Error" });
 									throw new Error('Internal Server Error');
 								} else {
+									console.log(err.message);
 									throw err;
 								}
 						});
