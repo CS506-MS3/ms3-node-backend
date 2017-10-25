@@ -9,36 +9,29 @@ const datastore = Datastore();
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
-// called everytime user_controller is called
-router.use(function timeLog (req, res, next) {
-  console.log('In User Controller @ Time: ', Date.now());
-  next();
-});
-
 // controller for /api/users
 router.route('/')
 	// GET /api/users
-	.get(function(req, res, done) {
+	.get(function(req, res) {
 		const query = datastore.createQuery('User_V1');
 		datastore.runQuery(query)
                        	.then((results) => {
                                	const users = results[0];
                             	res.status(200);
 								res.json(users);
-								done();
+								return;
                        	})
 						.catch((err) => {
 			 				console.error('ERROR:', err);
 			                    res.status(500);
 			                    res.json({ message: "Error" });
-			                    done();
+			                    return;
 						});
  	})
 
 	// POST	/api/users
-	.post(function(req, res, done) {
+	.post(function(req, res) {
 		//TODO Access & Update Datastore
-		var valid = true;
 		var key = "";
 		var data = "";
 		try {
@@ -55,15 +48,13 @@ router.route('/')
                                	if (users.length != 0) {
                                		res.status(409);
                                		res.json({ message: "User Already Exists" });
-                               		done();
+                               		return;
                                	}
-                            	console.log(users)
                        	})
 						.catch((err) => {
- 								console.error('ERROR:', err);
                         		res.status(500);
                        			res.json({ message: "Error" });
-                       			done();
+                       			return;
 						});
 
 			key = datastore.key(['User_V1']);
@@ -80,30 +71,25 @@ router.route('/')
 				notification : req.body.notification
 			};
 		} catch (err){
-			valid = false;
 			res.status(400);
 			res.json({ message: 'Invalid Syntax'});
-			done();
+			return;
 		}
-		
-		if (valid) {
-			datastore.save({
+		datastore.save({
 			  	key: key,
 				excludeFromIndexes: ["phone", "password_hash"],
  				data: data
-			}, function(err) {
+		}, function(err) {
   				if (!err) {
     				res.status(201);
 					res.json({ message: "Created" });
-					done();
+					return;
 	 			} else {
-					console.error("Create Error:", err);
 					res.status(500);
 					res.json({ message: "Error" });
-					done();
+					return;
 				}
-			});
-		}
+		});
 	});
 
 router.route('/:id/activate')
