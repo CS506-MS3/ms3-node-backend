@@ -18,23 +18,25 @@ router.use(function timeLog (req, res, next) {
 // controller for /api/users
 router.route('/')
 	// GET /api/users
-	.get(function(req, res) {
+	.get(function(req, res, done) {
 		const query = datastore.createQuery('User_V1');
 		datastore.runQuery(query)
                        	.then((results) => {
                                	const users = results[0];
                             	res.status(200);
 								res.json(users);
+								done();
                        	})
 						.catch((err) => {
 			 				console.error('ERROR:', err);
-			                        	res.status(500);
-			                       		res.json({ message: "Error" });
+			                    res.status(500);
+			                    res.json({ message: "Error" });
+			                    done();
 						});
  	})
 
 	// POST	/api/users
-	.post(function(req, res) {
+	.post(function(req, res, done) {
 		//TODO Access & Update Datastore
 		var valid = true;
 		var key = "";
@@ -53,6 +55,7 @@ router.route('/')
                                	if (users.length != 0) {
                                		res.status(409);
                                		res.json({ message: "User Already Exists" });
+                               		done();
                                	}
                             	console.log(users)
                        	})
@@ -60,7 +63,8 @@ router.route('/')
  								console.error('ERROR:', err);
                         		res.status(500);
                        			res.json({ message: "Error" });
-			});
+                       			done();
+						});
 
 			key = datastore.key(['User_V1']);
 			data = {
@@ -79,6 +83,7 @@ router.route('/')
 			valid = false;
 			res.status(400);
 			res.json({ message: 'Invalid Syntax'});
+			done();
 		}
 		
 		if (valid) {
@@ -88,12 +93,14 @@ router.route('/')
  				data: data
 			}, function(err) {
   				if (!err) {
-    					res.status(201);
+    				res.status(201);
 					res.json({ message: "Created" });
+					done();
 	 			} else {
 					console.error("Create Error:", err);
 					res.status(500);
 					res.json({ message: "Error" });
+					done();
 				}
 			});
 		}
