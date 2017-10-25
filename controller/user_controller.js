@@ -53,7 +53,6 @@ router.route('/')
 								if (err.message === 'User Already Exists') {
 									throw err;
 								} else {
-									console.log(err.message);
 									res.status(500);
 									res.json({ message: "Error" });
 									throw new Error('Internal Server Error');
@@ -62,8 +61,10 @@ router.route('/')
 			} catch (err){
 				return next(err);
 			}
+			console.log("Before next");
 			return next();
 		}, function(req, res, err) {
+			console.log(err.message);
 			if (!err) {
 				var key = datastore.key(['User_V1']);
 				var data = {
