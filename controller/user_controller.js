@@ -32,69 +32,67 @@ router.route('/')
 	// POST	/api/users
 	.post(function(req, res) {
 		//TODO Access & Update Datastore
+		var valid = true;
 		var key = "";
 		var data = "";
 		try {
 			if (
 				req.body.email === undefined ||
 				req.body.password_hash === undefined || req.body.notification === undefined
-			) {
-				throw 'Missing params';
+			){
+				res.status(400);
+				res.json({ message: "Invalid Syntax" });
+				valid = false;
 			}
-			const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
-			datastore.runQuery(query)
-                       	.then((results) => {
-                               	const users = results[0];
-                               	if (users.length != 0) {
-                               		console.log("In then");
-                               		res.status(409);
-                               		res.json({ message: "User Already Exists" });
-                               		return;
-                               	}
-                       	})
-						.catch((err) => {
-								console.log("In catch");
-                        		res.status(500);
-                       			res.json({ message: "Error" });
-                       			return;
-						});
 
-			key = datastore.key(['User_V1']);
-			data = {
-				bid : {},
-				wishlist : [],
-				access : {},
-				phone : (req.body.phone === undefined) ? 0 : req.body.phone,
-				listing : [],
-				stripe_id : 0,
-				active : false,
-				email : req.body.email,
-				password_hash : req.body.password_hash,
-				notification : req.body.notification
-			};
+			if (valid) {
+				const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
+				datastore.runQuery(query)
+	                       	.then((results) => {
+	                               	const users = results[0];
+	                               	if (users.length != 0) {
+	                               		valid = false;
+	                               		res.status(409);
+	                               		res.json({ message: "User Already Exists" });
+	                               	}
+	                       	})
+							.catch((err) => {
+									throw err;
+							});
+			}
+
+			if (valid) {
+				key = datastore.key(['User_V1']);
+				data = {
+					bid : {},
+					wishlist : [],
+					access : {},
+					phone : (req.body.phone === undefined) ? 0 : req.body.phone,
+					listing : [],
+					stripe_id : 0,
+					active : false,
+					email : req.body.email,
+					password_hash : req.body.password_hash,
+					notification : req.body.notification
+				};
+				datastore.save({
+				  	key: key,
+					excludeFromIndexes: ["phone", "password_hash"],
+	 				data: data
+				}, function(err) {
+		  				if (!err) {
+		  					console.log("In save");
+		    				res.status(201);
+							res.json({ message: "Created" });
+			 			} else {
+			 				throw err;
+						}
+				});
+			}
 		} catch (err){
-			console.log("In err");
-			res.status(400);
-			res.json({ message: 'Invalid Syntax'});
-			return;
+			res.status(500);
+			res.json({ message: "Error" });
 		}
-		datastore.save({
-			  	key: key,
-				excludeFromIndexes: ["phone", "password_hash"],
- 				data: data
-		}, function(err) {
-  				if (!err) {
-  					console.log("In save");
-    				res.status(201);
-					res.json({ message: "Created" });
-					return;
-	 			} else {
-	 				console.log("In save err");
-					res.status(500);
-					res.json({ message: "Error" });
-					return;
-				}
-		});
 	});
 
 router.route('/:id/activate')
