@@ -26,11 +26,11 @@ router.route('/')
                             	res.status(200);
 								res.json(users);
                        	})
-			.catch((err) => {
- 				console.error('ERROR:', err);
-                        	res.status(500);
-                       		res.json({ message: "Error" });
-			});
+						.catch((err) => {
+			 				console.error('ERROR:', err);
+			                        	res.status(500);
+			                       		res.json({ message: "Error" });
+						});
  	})
 
 	// POST	/api/users
@@ -46,6 +46,18 @@ router.route('/')
 			) {
 				throw 'Missing params';
 			}
+			const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
+			datastore.runQuery(query)
+                       	.then((results) => {
+                               	const users = results[0];
+                            	console.log(users)
+                       	})
+						.catch((err) => {
+ 								console.error('ERROR:', err);
+                        		res.status(500);
+                       			res.json({ message: "Error" });
+			});
+
 			key = datastore.key(['User_V1']);
 			data = {
 				bid : {},
