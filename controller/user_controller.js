@@ -28,7 +28,7 @@ router.route('/')
  	})
 
 	// POST	/api/users
-	.post(function(req, res) {
+	.post(function(req, res, next) {
 			//TODO Access & Update Datastore
 			try {
 				if (
