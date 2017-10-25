@@ -29,39 +29,39 @@ router.route('/')
 
 	// POST	/api/users
 	.post(function(req, res) {
-		//TODO Access & Update Datastore
-		var valid = true;
-		var key = "";
-		var data = "";
-		try {
-			if (
-				req.body.email === undefined ||
-				req.body.password_hash === undefined || req.body.notification === undefined
-			){
-				res.status(400);
-				res.json({ message: "Invalid Syntax" });
-				valid = false;
-			}
-
-			if (valid == true) {
+			//TODO Access & Update Datastore
+			try {
+				if (
+					req.body.email === undefined ||
+					req.body.password_hash === undefined || req.body.notification === undefined
+				){ 
+					res.status(400);
+					res.json({ message: "Invalid Syntax" });
+					return next(new Error('Invalid Syntax'));
+				}
 				const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
 				datastore.runQuery(query)
-	                       	.then((results) => {
-	                               	const users = results[0];
-	                               	if (users.length != 0) {
-	                               		valid = false;
-	                               		res.status(409);
-	                               		res.json({ message: "User Already Exists" });
-	                               	}
-	                       	})
-							.catch((err) => {
-									throw err;
-							});
+		                .then((results) => {
+		                        const users = results[0];
+		                        if (users.length != 0) {
+		                               	res.status(409);
+		                               	res.json({ message: "User Already Exists" });
+		                               	return next(new Error('User Already Exists'));
+		                        }
+		                })
+						.catch((err) => {
+								throw err;
+						});
+			} catch (err){
+				res.status(500);
+				res.json({ message: "Error" });
+				return next(err);
 			}
-
-			if (valid == true) {
-				key = datastore.key(['User_V1']);
-				data = {
+			return next();
+		}, function(req, res, err) {
+			if (!err) {
+				var key = datastore.key(['User_V1']);
+				var data = {
 					bid : {},
 					wishlist : [],
 					access : {},
@@ -83,14 +83,11 @@ router.route('/')
 		    				res.status(201);
 							res.json({ message: "Created" });
 			 			} else {
-			 				throw err;
+			 				res.status(500);
+							res.json({ message: "Error" });
 						}
 				});
 			}
-		} catch (err){
-			res.status(500);
-			res.json({ message: "Error" });
-		}
 	});
 
 router.route('/:id/activate')
