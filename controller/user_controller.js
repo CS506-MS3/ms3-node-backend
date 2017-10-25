@@ -28,7 +28,7 @@ router.route('/')
  	})
 
 	// POST	/api/users
-	.post(function(req, res, next) {
+	.post(function(req, res) {
 			//TODO Access & Update Datastore
 			try {
 				if (
@@ -46,56 +46,47 @@ router.route('/')
 		                        if (users.length != 0) {
 		                               	res.status(409);
 		                               	res.json({ message: "User Already Exists" });
-		                               	throw new Error('User Already Exists');
+		                        } else {
+		                        	var key = datastore.key(['User_V1']);
+									var data = {
+										bid : {},
+										wishlist : [],
+										access : {},
+										phone : (req.body.phone === undefined) ? 0 : req.body.phone,
+										listing : [],
+										stripe_id : 0,
+										active : false,
+										email : req.body.email,
+										password_hash : req.body.password_hash,
+										notification : req.body.notification
+									};
+									datastore.save({
+									  	key: key,
+										excludeFromIndexes: ["phone", "password_hash"],
+						 				data: data
+									}, function(err) {
+							  				if (!err) {
+							    				res.status(201);
+												res.json({ message: "Created" });
+								 			} else {
+								 				res.status(500);
+												res.json({ message: "Error" });
+											}
+									});
 		                        }
 		                })
 						.catch((err) => {
-								if (err.message === 'User Already Exists') {
-									throw err;
-								} else {
-									res.status(500);
-									res.json({ message: "Error" });
-									throw new Error('Internal Server Error');
-								}
+								res.status(500);
+								res.json({ message: "Error" });
 						});
 			} catch (err){
-				console.log(err.message);
-				return next(err);
+				if (err.message === 'Invalid Syntax') {
+				} else {
+						res.status(500);
+						res.json({ message: "Error" });
+				}
 			}
-			console.log("Before next");
-			return next();
-		}, function(req, res, err) {
-			console.log(err.message);
-			if (!err) {
-				var key = datastore.key(['User_V1']);
-				var data = {
-					bid : {},
-					wishlist : [],
-					access : {},
-					phone : (req.body.phone === undefined) ? 0 : req.body.phone,
-					listing : [],
-					stripe_id : 0,
-					active : false,
-					email : req.body.email,
-					password_hash : req.body.password_hash,
-					notification : req.body.notification
-				};
-				datastore.save({
-				  	key: key,
-					excludeFromIndexes: ["phone", "password_hash"],
-	 				data: data
-				}, function(err) {
-		  				if (!err) {
-		  					console.log("In save");
-		    				res.status(201);
-							res.json({ message: "Created" });
-			 			} else {
-			 				res.status(500);
-							res.json({ message: "Error" });
-						}
-				});
-			}
-	});
+		});
 
 router.route('/:id/activate')
 	// PUT /api/users/:id/activate
