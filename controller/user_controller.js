@@ -50,6 +50,10 @@ router.route('/')
 			datastore.runQuery(query)
                        	.then((results) => {
                                	const users = results[0];
+                               	if (users.length != 0) {
+                               		res.status(409);
+                               		res.json({ message: "User Already Exists" });
+                               	}
                             	console.log(users)
                        	})
 						.catch((err) => {
