@@ -51,9 +51,9 @@ router.route('/')
 		                })
 						.catch((err) => {
 								if (err.message === 'User Already Exists') {
-									console.log(err.message);
 									throw err;
 								} else {
+									console.log(err.message);
 									res.status(500);
 									res.json({ message: "Error" });
 									throw new Error('Internal Server Error');
