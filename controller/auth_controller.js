@@ -30,13 +30,13 @@ router.route('/')
 				const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
 				datastore.runQuery(query)
                        	.then((results) => {
-                               	const users = results[0];
                                	var token = '';
                                	var password_hash = req.body.password; // TODO hash password
-                            	if (users.length == 0) {
+                            	if (results.length == 0) {
 		                               	res.status(401);
 		                        		res.json({ message: "Invalid Email/Password Combo" });
 		                        } else {
+		                        		var users = results[0];
 		                        		if (users[0].data.password_hash !== password_hash) {
 		                        			res.status(401);
 		                        			res.json({ message: "Invalid Email/Password Combo" });
