@@ -69,13 +69,11 @@ router.route('/')
 				try {
 					var token = req.get('token')
 					var decoded = jwt.verify(token, secret.token_secret);
-					console.log(decoded);
 					const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', token);
 					datastore.runQuery(query, function(err, entities) {
 							if (err) {
 								console.log(err);
 							}
-							console.log(entities);
 							if (!err && entities.length == 0) {
 		                    		var key = datastore.key(['Token_Blacklist_V1']);
 									var data = {
@@ -85,12 +83,14 @@ router.route('/')
 										key: key,
 										data: data
 									}, function(err, entity) {
-										if (!err) {
-											console.log(entity);
-										} else {
-											console.log(err);
+										if (err) {
+											console.error(err);
+										} else{
+											console.log("Token blacklisted");
 										}
 									});
+		                    } else {
+		                    	console.log("Token already blacklisted");
 		                    }
 					});
 				} catch (err) {
