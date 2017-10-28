@@ -43,7 +43,7 @@ router.route('/')
 		                        		} else {
 		                        			token = jwt.sign({
 													data: {
-													  		id : users[datastore.Key],
+													  		id : users[0][datastore.Key].id,
 													  		email : users[0].email,
 													  		type : 'user'
 													}
