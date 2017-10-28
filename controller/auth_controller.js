@@ -31,9 +31,9 @@ router.route('/')
 				datastore.runQuery(query, function(err, entities) {
                                	var password_hash = req.body.password; // TODO hash password
 				console.log(entities);
-                            	if (entities.length === 0) {
+                            	if (entities.length == 0) {
 		                               	res.status(401);
-		                        		res.json({ message: "Invalid Email/Password Combo" });
+		                        		res.json({ message: "No result, Invalid Email/Password Combo" });
 		                        } else {
 		                        		var user_data = entities[0];
 		                        		var user_key = entities[0][datastore.Key];
