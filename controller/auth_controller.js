@@ -3,6 +3,7 @@ var router = express.Router();
 var bodyParser = require('body-parser');
 var secret = require('../secret/secret.json')
 var jwt = require('jsonwebtoken');
+var crypto = require('crypto');
 
 const Datastore = require('@google-cloud/datastore');
 const datastore = Datastore();
@@ -41,19 +42,18 @@ router.route('/')
 		                        			res.json({ message: "Invalid Email/Password Combo" });
 		                        		} else {
 		                        			token = jwt.sign({
-												  data: {
-												  		id : users[0].key,
-												  		email : users[0].data.email,
-												  		type : 'user'
-												  }
-											}, secret.secret, { expiresIn: '14d' });
+													data: {
+													  		id : users[0].key,
+													  		email : users[0].data.email,
+													  		type : 'user'
+													}
+											}, secret.token_secret, { expiresIn: '14d' });
 											res.status(200);
 											res.json({ token: token });
 		                        		}
 		                        }
                        	})
 						.catch((err) => {
-			 				console.error('ERROR:', err);
 			                    res.status(500);
 			                    res.json({ message: "Internal Server Error" });
 						});
