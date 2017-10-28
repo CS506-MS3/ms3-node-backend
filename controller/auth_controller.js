@@ -28,22 +28,22 @@ router.route('/')
 					throw new Error('Invalid Syntax');
 				}
 				const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
-				datastore.runQuery(query)
-                       	.then((results) => {
-                               	var token = '';
+				datastore.runQuery(query, function(err, entities) {
                                	var password_hash = req.body.password; // TODO hash password
-                            	if (results.length == 0) {
+                            	if (entities.length === 0) {
 		                               	res.status(401);
 		                        		res.json({ message: "Invalid Email/Password Combo" });
 		                        } else {
-		                        		var users = results[0];
-		                        		if (users[0].password_hash !== password_hash) {
+		                        		var user_data = entities[0][0];
+		                        		var user_key = entities[0][datastore.Key];
+		                        		if (user_data.password_hash !== password_hash || user_data === undefined || user_key === undefined) {
 		                        			res.status(401);
 		                        			res.json({ message: "Invalid Email/Password Combo" });
 		                        		} else {
-		                        			token = jwt.sign({
+		                        			var id = user_key.id
+		                        			var token = jwt.sign({
 													data: {
-													  		id : users[0][datastore.Key].id,
+													  		id : id,
 													  		email : users[0].email,
 													  		type : 'user'
 													}
@@ -52,13 +52,7 @@ router.route('/')
 											res.json({ token: token });
 		                        		}
 		                        }
-                       	})
-						.catch((err) => {
-							    console.error(err);
-			                    res.status(500);
-			                    res.json({ message: "Internal Server Error" });
-						});
-
+				});
 			} catch (err){
 				console.error(err);
 				if (err.message !== 'Invalid Syntax') {
