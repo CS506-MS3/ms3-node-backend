@@ -38,6 +38,7 @@ router.route('/')
 		                        		res.json({ message: "Invalid Email/Password Combo" });
 		                        } else {
 		                        		var users = results[0];
+		                        		console.log(users[0]);
 		                        		if (users[0].password_hash !== password_hash) {
 		                        			res.status(401);
 		                        			res.json({ message: "Invalid Email/Password Combo" });
