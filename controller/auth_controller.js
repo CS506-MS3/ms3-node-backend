@@ -45,7 +45,7 @@ router.route('/')
 		                        			token = jwt.sign({
 													data: {
 													  		id : users[0].key,
-													  		email : users[0].data.email,
+													  		email : users[0].email,
 													  		type : 'user'
 													}
 											}, secret.token_secret, { expiresIn: '14d' });
