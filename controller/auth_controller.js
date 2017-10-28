@@ -94,6 +94,7 @@ router.route('/')
 		                    }
 					});
 				} catch (err) {
+					console.log("Invalid Token");
 				}
 				res.status(204).send();
 		});
