@@ -70,20 +70,29 @@ router.route('/')
 					var token = req.get('token')
 					var decoded = jwt.verify(token, secret.token_secret);
 					console.log(decoded);
-					var key = datastore.key(['Token_Blacklist_V1']);
-					var data = {
-						token : token
-					};
-					datastore.save({
-						key: key,
-						data: data
-					}, function(err, entity) {
-						if (!err) {
-							console.log(entity);
-						} else {
-							console.log(err);
-						}
-					});
+					const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', token);
+					datastore.runQuery(query, function(err, entities) {
+							if (err) {
+								console.log(err);
+							}
+							console.log(entities);
+							if (!err && entities.length == 0) {
+		                    		var key = datastore.key(['Token_Blacklist_V1']);
+									var data = {
+										token : token
+									};
+									datastore.save({
+										key: key,
+										data: data
+									}, function(err, entity) {
+										if (!err) {
+											console.log(entity);
+										} else {
+											console.log(err);
+										}
+									});
+		                    }
+					}
 				} catch (err) {
 				}
 				res.status(204).send();
