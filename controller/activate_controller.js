@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var bodyParser = require('body-parser');
-var secret = require('../secret.json')
+var secret = require('../secret/secret.json')
+var jwt = require('jsonwebtoken');
 
 const Datastore = require('@google-cloud/datastore');
 const datastore = Datastore();
