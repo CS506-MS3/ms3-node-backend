@@ -37,8 +37,6 @@ router.route('/')
 		                        } else {
 		                        		var user_data = entities[0];
 		                        		var user_key = entities[0][datastore.KEY];
-		                        		console.log(user_data);
-		                        		console.log(user_key);
 		                        		if (user_data.password_hash !== password_hash){ //|| user_data === undefined || user_key === undefined) {
 		                        			res.status(401);
 		                        			res.json({ message: "Invalid Email/Password Combo" });
@@ -47,7 +45,7 @@ router.route('/')
 		                        			var token = jwt.sign({
 													data: {
 													  		id : id,
-													  		email : users[0].email,
+													  		email : user_data.email,
 													  		type : 'user'
 													}
 											}, secret.token_secret, { expiresIn: '14d' });
