@@ -32,7 +32,6 @@ router.route('/')
                        	.then((results) => {
                                	var token = '';
                                	var password_hash = req.body.password; // TODO hash password
-                               	console.log(results);
                             	if (results.length == 0) {
 		                               	res.status(401);
 		                        		res.json({ message: "Invalid Email/Password Combo" });
