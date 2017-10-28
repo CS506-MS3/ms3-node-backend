@@ -70,6 +70,20 @@ router.route('/')
 					var token = req.get('token')
 					var decoded = jwt.verify(token, secret.token_secret);
 					console.log(decoded);
+					var key = datastore.key(['Token_Blacklist_V1']);
+					var data = {
+						token : token
+					};
+					datastore.save({
+						key: key,
+						data: data
+					}, function(err, entity) {
+						if (!err) {
+							console.log(entity);
+						} else {
+							console.log(err);
+						}
+					});
 				} catch (err) {
 				}
 				res.status(204).send();
