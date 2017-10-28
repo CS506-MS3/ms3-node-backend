@@ -32,7 +32,6 @@ router.route('/')
                                	var password_hash = crypto.createHmac('sha256', secret.password_secret)
 							                   .update(req.body.password)
 							                   .digest('hex');
-							    console.log(password_hash);
                             	if (entities.length == 0) {
 		                               	res.status(401);
 		                        		res.json({ message: "Invalid Email/Password Combo" });

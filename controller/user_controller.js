@@ -15,6 +15,13 @@ router.route('/')
 	// GET /api/users
 	.get(function(req, res) {
 		// TODO Employee Auth
+		try {
+					var token = req.get('token')
+					var decoded = jwt.verify(token, secret.token_secret);
+		} catch (err) {
+					console.log("Invalid Token");
+		}
+		
 		const query = datastore.createQuery('User_V1');
 		datastore.runQuery(query)
                        	.then((results) => {
