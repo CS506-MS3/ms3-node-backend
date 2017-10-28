@@ -92,7 +92,7 @@ router.route('/')
 										}
 									});
 		                    }
-					}
+					});
 				} catch (err) {
 				}
 				res.status(204).send();
