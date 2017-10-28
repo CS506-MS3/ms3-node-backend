@@ -51,6 +51,7 @@ router.route('/')
 													  		type : 'user'
 													}
 											}, secret.token_secret, { expiresIn: '14d' });
+											delete user_data[password_hash];
 											res.status(200);
 											res.json({ token: token,
 													   data: user_data });
@@ -58,7 +59,6 @@ router.route('/')
 		                        }
 				});
 			} catch (err){
-				console.error(err);
 				if (err.message !== 'Invalid Syntax') {
 						res.status(500);
 						res.json({ message: "Internal Server Error" });
