@@ -14,9 +14,5 @@ build
 
 node_modules
 
-<<<<<<< HEAD
 secret
-=======
 .DS_Store
-secret.json
->>>>>>> 5cf4b3af631a22569fb6541db89d0af7755a6748
