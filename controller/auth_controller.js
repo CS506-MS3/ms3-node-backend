@@ -36,7 +36,7 @@ router.route('/')
 		                        		res.json({ message: "Invalid Email/Password Combo" });
 		                        } else {
 		                        		var user_data = entities[0];
-		                        		var user_key = entities[0][datastore.Key];
+		                        		var user_key = entities[0][datastore.KEY];
 		                        		console.log(user_data);
 		                        		console.log(user_key);
 		                        		if (user_data.password_hash !== password_hash){ //|| user_data === undefined || user_key === undefined) {
