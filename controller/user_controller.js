@@ -13,6 +13,7 @@ router.use(bodyParser.json());
 router.route('/')
 	// GET /api/users
 	.get(function(req, res) {
+		// TODO Employee Auth
 		const query = datastore.createQuery('User_V1');
 		datastore.runQuery(query)
                        	.then((results) => {
@@ -29,7 +30,6 @@ router.route('/')
 
 	// POST	/api/users
 	.post(function(req, res) {
-			//TODO Auth
 			try {
 				if (
 					req.body.email === undefined ||
