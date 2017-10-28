@@ -8,7 +8,10 @@ app.use(bodyParser.json());
 
 // TODO /api/users
 var userController = require('./controller/user_controller'); // import user controller module (user_controller.js) from controller dir
+var authController = require('./controller/auth_controller');
+
 router.use('/users', userController); // mount /api/users to user controller module
+router.use('/auth', authController);
 
 // TODO /api/authenticate
 // TODO /api/access
@@ -21,6 +24,7 @@ app.get('/', function(req, res){
 });
 
 app.use('/api', router)
+
 
 app.listen(3000)
 
