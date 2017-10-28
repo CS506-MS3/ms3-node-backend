@@ -54,11 +54,13 @@ router.route('/')
 		                        }
                        	})
 						.catch((err) => {
+							    console.error(err);
 			                    res.status(500);
 			                    res.json({ message: "Internal Server Error" });
 						});
 
 			} catch (err){
+				console.error(err);
 				if (err.message !== 'Invalid Syntax') {
 						res.status(500);
 						res.json({ message: "Internal Server Error" });
