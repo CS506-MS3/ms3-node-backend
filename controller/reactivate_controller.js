@@ -16,28 +16,40 @@ router.use(function timeLog (req, res, next) {
 
 router.route('/')
 	
-	.get(function(req, res){
+	.post(function(req, res){
 
-		var key = {
-			kind: 'User_V1',
-			id: req.params.id
-		};
-		var data = {};
-
-		datastore.get(key, function(err, entity) {
-				if (err) { // If there is datastore error
-			  		res.status(500);
-			  		res.json({ message: 'Internal Error' });
-				} else if (entity === undefined) { // If user entity is not found
-			  		res.status(404);
-			  		res.json({ message: 'Email Not found' });
-			  	} else {
-			  		if (entity.active == true) { // If user entity is already active
-						res.status(400);
-						res.json({ message: 'Error Updating Entity' });
-			  		} else { // If active user entity found
-			  			data = entity;
-			  		}
-			  	}
-			});
+		try {
+				if (
+					req.body.email === undefined
+				){ 
+					res.status(400);
+					res.json({ message: "Invalid Syntax" });
+					throw new Error('Invalid Syntax');
+				}
+				const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
+				datastore.runQuery(query)
+		                .then((results) => {
+		                        const users = results[0];
+		                        if (users.length === 0) {
+		                               	res.status(404);
+		                               	res.json({ message: "User Not Found" });
+		                        } else {
+		                        		if (users[0].data.active !== false) {
+		                        			res.status(409);
+		                        			res.json({ message: "Account Already Active" });
+		                        		} else {
+		                        			// TODO Generate Token, send through nodemailer
+		                        		}
+		                        }
+		                })
+						.catch((err) => {
+								res.status(500);
+								res.json({ message: "Error" });
+						});
+			} catch (err){
+				if (err.message !== 'Invalid Syntax') {
+						res.status(500);
+						res.json({ message: "Error" });
+				}
+			}
 	});
