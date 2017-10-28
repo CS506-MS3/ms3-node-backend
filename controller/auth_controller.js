@@ -71,10 +71,14 @@ router.route('/')
 
 		.delete(function(req, res){
 				try {
-					var decoded = jwt.verify(req.get('token'), secret.token_secret);
-					console.log(decoded);
+					var token = req.get('token')
+					var decoded = jwt.verify(token, secret.token_secret);
+					res.status(200);
+					res.json(decoded);
 				} catch (err) {
 					console.log(err);
+					res.status(500);
+					res.json({ message: "Error" });
 				}
 		});
 
