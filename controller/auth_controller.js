@@ -29,7 +29,7 @@ router.route('/')
 				}
 				const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
 				datastore.runQuery(query, function(err, entities) {
-                               	var password_hash = crypto.createHmac('sha256', secret.password_secret);
+                               	var password_hash = crypto.createHmac('sha256', secret.password_secret)
 							                   .update(req.body.password)
 							                   .digest('hex');
 							    console.log(password_hash);
