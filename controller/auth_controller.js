@@ -39,7 +39,10 @@ router.route('/')
 		                        } else {
 		                        		var user_data = entities[0];
 		                        		var user_key = entities[0][datastore.KEY];
-		                        		if (user_data.password_hash !== password_hash){ //|| user_data === undefined || user_key === undefined) {
+		                        		if (user_data.active === false){
+		                        			res.status(403);
+		                        			res.json({ message: "Inactive account" });
+		                        		} else if (user_data.password_hash !== password_hash){ //|| user_data === undefined || user_key === undefined) {
 		                        			res.status(401);
 		                        			res.json({ message: "Invalid Email/Password Combo" });
 		                        		} else {
