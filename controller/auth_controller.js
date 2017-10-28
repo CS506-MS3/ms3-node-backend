@@ -69,13 +69,10 @@ router.route('/')
 				try {
 					var token = req.get('token')
 					var decoded = jwt.verify(token, secret.token_secret);
-					res.status(200);
-					res.json(decoded);
+					console.log(decoded);
 				} catch (err) {
-					console.log(err);
-					res.status(500);
-					res.json({ message: "Error" });
 				}
+				res.status(204).send();
 		});
 
 
