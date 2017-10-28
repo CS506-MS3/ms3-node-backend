@@ -50,7 +50,8 @@ router.route('/')
 													}
 											}, secret.token_secret, { expiresIn: '14d' });
 											res.status(200);
-											res.json({ token: token });
+											res.json({ token: token,
+													   data: user_data });
 		                        		}
 		                        }
 				});
