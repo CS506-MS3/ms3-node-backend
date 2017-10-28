@@ -51,7 +51,8 @@ router.route('/')
 													  		type : 'user'
 													}
 											}, secret.token_secret, { expiresIn: '14d' });
-											delete user_data[password_hash];
+											delete user_data["password_hash"];
+											delete user_data["stripe_id"];
 											res.status(200);
 											res.json({ token: token,
 													   data: user_data });
