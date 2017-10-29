@@ -98,54 +98,105 @@ router.route('/')
 
 router.route('/:id/activate')
 	// PUT /api/users/:id/activate
-	.put(function(req, res){
+	.get(function(req, res){
 		var valid = true;
-
-		if (req.body.active === undefined || req.body.active != true) {
-			valid = false;
-			res.status(400);
-			res.json({ message: 'Missing valid property' });
-		}
+		var token = '';
+		var decoded = {};
 		
-		var key = {
-			kind: 'User_V1',
-			id: req.params.id
-		};
-		var data = {};
+		// verify employee auth token
+		try {
+			token = req.get('token');
+			decoded = jwt.verify(token, secret.token_secret);
+			if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
+				console.log('Missing JWT Payload Property');
+				throw new Error('Missing JWT Payload Property');
+			} else {
+				if (decoded.data.id !== req.params.id) {
+					// employee token id will be different from user id in url params
+					if (decoded.data.type !== 'employee') {
+						console.log('Employee Only');
+						throw new Error('Employee Only');
+					}
+				} else {
+					console.log('Employee Only');
+					throw new Error('Employee Only');
+				}
+			}
+		} catch (err) {
+			valid = false;
+			res.status(401);
+			res.json({ message: 'Invalid Auth Token' });
+		}
 
-		if (valid == true) {
+		// check if token in token blacklist
+		if (valid === true) {
+			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', token);
+			datastore.runQuery(query, function(err, entities) {
+				if (err) {
+					valid = false;
+					console.log('Error Running Token Blacklist Query');
+					res.status(500);
+					res.json({ message: 'Internal Server Error' });
+				} else {
+					if (entities.length != 0) {
+						valid = false;
+						console.log('Token Blacklisted');
+						res.status(401);
+						res.json({ message: 'Invalid Auth Token' });	
+			        }
+	            }
+			});
+		}
+
+		// check user entity and update
+		if (valid === true) {
+			var key = {
+				kind: 'User_V1',
+				id: req.params.id
+			};
+			var data = {};
+
 			datastore.get(key, function(err, entity) {
 				if (err) { // If there is datastore error
 					valid = false;
-					console.error(err);
+					console.log('Error Running User Query');
 			  		res.status(500);
-			  		res.json({ message: 'Internal Error' });
+			  		res.json({ message: 'Internal Server Error' });
 				} else if (entity === undefined) { // If user entity is not found
 			  		valid = false;
+			  		console.log('User Entity Not Found');
 			  		res.status(404);
-			  		res.json({ message: 'Not found' });
+			  		res.json({ message: 'User Resource Does Not Exist' });
 			  	} else {
-			  		if (entity.active == true) { // If user entity is already active
+			  		if (entity.email === decoded.data.email) { // If email in JWT payload mismatch
 			  			valid = false;
-						res.status(400);
-						res.json({ message: 'Error Updating Entity' });
-			  		} else { // If active user entity found
+			  			console.log('Incorrect JWT Payload');
+			  			res.status(401);
+						res.json({ message: 'Invalid Auth Token' });
+			  		} else if (entity.active === true) { // If user entity is already inactive
+			  			valid = false;
+			  			console.log('Account Already Active');
+						res.status(409);
+						res.json({ message: 'Account Already Active' });
+			  		} else {
 			  			data = entity;
 			  		}
 			  	}
-			  	if (valid == true) {
+
+			  	// update user entity 
+			  	if (valid === true) {
 					data.active = true;
 					datastore.save({
 						key: key,
 						data: data
-					}, function(err, entity) {
+					}, function(err) {
 						if (!err) { // If update success
 							res.status(200);
-							res.json(data);
+							res.json({ active: true });
 						} else { // If there is datastore error
-							console.error(err);
+							console.log('Error Saving New User Entity');
 							res.status(500);
-					  		res.json({ message: 'Internal Error' });
+					  		res.json({ message: 'Internal Server Error' });
 						}
 					});
 				}
