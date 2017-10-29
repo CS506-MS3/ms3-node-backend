@@ -173,18 +173,18 @@ router.route('/:id/deactivate')
 				}
 			}
 		} catch (err) {
+			valid = false;
 			res.status(401);
 			res.json({ message: 'Invalid Auth Token' });
-			valid = false;
 		}
 
 		// for users, check if password property in request body
 		if (valid === true) {
 			if (decoded.type === 'user') {
 				if (req.body.password === undefined) {
+					valid = false;
 					res.status(400);
 					res.json({ message: 'Malformed Request' });
-					valid = false;
 				}
 			}
 		}
@@ -194,20 +194,20 @@ router.route('/:id/deactivate')
 			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', token);
 			datastore.runQuery(query, function(err, entities) {
 				if (err) {
+					valid = false;
 					res.status(500);
 					res.json({ message: 'Internal Server Error' });
-					valid = false;
 				} else {
 					if (entities.length != 0) {
+						valid = false;
 						res.status(401);
-						res.json({ message: 'Invalid Auth Token' });
-			        	valid = false;
+						res.json({ message: 'Invalid Auth Token' });	
 			        }
 	            }
 			});
 		}
 
-		// 
+		// check user entity and update
 		if (valid === true) {
 			var key = {
 				kind: 'User_V1',
@@ -218,7 +218,6 @@ router.route('/:id/deactivate')
 			datastore.get(key, function(err, entity) {
 				if (err) { // If there is datastore error
 					valid = false;
-					console.error(err);
 			  		res.status(500);
 			  		res.json({ message: 'Internal Server Error' });
 				} else if (entity === undefined) { // If user entity is not found
@@ -226,14 +225,39 @@ router.route('/:id/deactivate')
 			  		res.status(404);
 			  		res.json({ message: 'User Resource Does Not Exist' });
 			  	} else {
-			  		if (entity.active === false) { // If user entity is already inactive
+			  		if (entity.email !== decoded.email && decoded.type === 'user') { // If email in JWT payload mismatch
+			  			valid = false;
+			  			res.status(401);
+						res.json({ message: 'Invalid Auth Token' });
+			  		} else if (entity.active === false) { // If user entity is already inactive
 			  			valid = false;
 						res.status(409);
 						res.json({ message: 'Account Already Inactive' });
 			  		} else { // If active user entity found
+			  			if (decoded.type === 'user') { // for user request check if password match
+				  			try {
+				  				var password_hash = crypto.createHmac('sha256', secret.password_secret)
+								                   .update(req.body.password)
+								                   .digest('hex');
+								if (entity.password_hash !== password_hash) {
+									throw new Error('Incorrect Password');
+								}
+							} catch (err){
+								valid = false;
+								if (err.message === 'Incorrect Password') {
+									res.status(400);
+									res.json({ message: 'Malformed Request' });
+								} else {
+							  		res.status(500);
+							  		res.json({ message: 'Internal Server Error' });
+							  	}
+							}
+						}
 			  			data = entity;
 			  		}
 			  	}
+
+			  	// update user entity 
 			  	if (valid === true) {
 					data.active = false;
 					datastore.save({
@@ -241,10 +265,11 @@ router.route('/:id/deactivate')
 						data: data
 					}, function(err, entity) {
 						if (!err) { // If update success
+							delete data["password_hash"];
+							delete data["stripe_id"];
 							res.status(200);
 							res.json(data);
 						} else { // If there is datastore error
-							console.error(err);
 							res.status(500);
 					  		res.json({ message: 'Internal Server Error' });
 						}
