@@ -102,7 +102,7 @@ router.route('/')
 									res.status(200);
 			                        token = jwt.sign({
 										data: {
-											id : entity.id,
+											id : entity[datastore.KEY].id,
 											email : entity.email,
 											type : 'user'
 										}
