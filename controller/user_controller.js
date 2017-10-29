@@ -162,13 +162,13 @@ router.route('/:id/deactivate')
 		try {
 			token = req.get('token');
 			decoded = jwt.verify(token, secret.token_secret);
-			if (decoded.id === undefined || decoded.email === undefined || decoded.type === undefined) {
+			if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
 				console.log('Missing JWT Payload Property');
 				throw new Error('Missing JWT Payload Property');
 			} else {
-				if (decoded.id !== req.params.id) {
+				if (decoded.data.id !== req.params.id) {
 					// employee token id will be different from user id in url params
-					if (decoded.type === 'user') {
+					if (decoded.data.type === 'user') {
 						console.log('User Id Mismatch');
 						throw new Error('User Id Mismatch');
 					}
@@ -182,7 +182,7 @@ router.route('/:id/deactivate')
 
 		// for users, check if password property in request body
 		if (valid === true) {
-			if (decoded.type === 'user') {
+			if (decoded.data.type === 'user') {
 				if (req.body.password === undefined) {
 					valid = false;
 					console.log('Missing Password');
@@ -232,7 +232,7 @@ router.route('/:id/deactivate')
 			  		res.status(404);
 			  		res.json({ message: 'User Resource Does Not Exist' });
 			  	} else {
-			  		if (entity.email !== decoded.email && decoded.type === 'user') { // If email in JWT payload mismatch
+			  		if (entity.email !== decoded.data.email && decoded.data.type === 'user') { // If email in JWT payload mismatch
 			  			valid = false;
 			  			console.log('Incomplete JWT Payload');
 			  			res.status(401);
@@ -243,7 +243,7 @@ router.route('/:id/deactivate')
 						res.status(409);
 						res.json({ message: 'Account Already Inactive' });
 			  		} else { // If active user entity found
-			  			if (decoded.type === 'user') { // for user request check if password match
+			  			if (decoded.data.type === 'user') { // for user request check if password match
 				  			try {
 				  				var password_hash = crypto.createHmac('sha256', secret.password_secret)
 								                   .update(req.body.password)
