@@ -163,11 +163,13 @@ router.route('/:id/deactivate')
 			token = req.get('token');
 			decoded = jwt.verify(token, secret.token_secret);
 			if (decoded.id === undefined || decoded.email === undefined || decoded.type === undefined) {
+				console.log('Missing JWT Payload Property');
 				throw new Error('Missing JWT Payload Property');
 			} else {
 				if (decoded.id !== req.params.id) {
 					// employee token id will be different from user id in url params
 					if (decoded.type === 'user') {
+						console.log('User Id Mismatch');
 						throw new Error('User Id Mismatch');
 					}
 				}
@@ -183,6 +185,7 @@ router.route('/:id/deactivate')
 			if (decoded.type === 'user') {
 				if (req.body.password === undefined) {
 					valid = false;
+					console.log('Missing Password');
 					res.status(400);
 					res.json({ message: 'Malformed Request' });
 				}
@@ -195,11 +198,13 @@ router.route('/:id/deactivate')
 			datastore.runQuery(query, function(err, entities) {
 				if (err) {
 					valid = false;
+					console.log('Error Running Token Blacklist Query');
 					res.status(500);
 					res.json({ message: 'Internal Server Error' });
 				} else {
 					if (entities.length != 0) {
 						valid = false;
+						console.log('Token Blacklisted');
 						res.status(401);
 						res.json({ message: 'Invalid Auth Token' });	
 			        }
@@ -218,19 +223,23 @@ router.route('/:id/deactivate')
 			datastore.get(key, function(err, entity) {
 				if (err) { // If there is datastore error
 					valid = false;
+					console.log('Error Running User Query');
 			  		res.status(500);
 			  		res.json({ message: 'Internal Server Error' });
 				} else if (entity === undefined) { // If user entity is not found
 			  		valid = false;
+			  		console.log('User Entity Not Found');
 			  		res.status(404);
 			  		res.json({ message: 'User Resource Does Not Exist' });
 			  	} else {
 			  		if (entity.email !== decoded.email && decoded.type === 'user') { // If email in JWT payload mismatch
 			  			valid = false;
+			  			console.log('Incomplete JWT Payload');
 			  			res.status(401);
 						res.json({ message: 'Invalid Auth Token' });
 			  		} else if (entity.active === false) { // If user entity is already inactive
 			  			valid = false;
+			  			console.log('Account Already Inactive');
 						res.status(409);
 						res.json({ message: 'Account Already Inactive' });
 			  		} else { // If active user entity found
@@ -240,6 +249,7 @@ router.route('/:id/deactivate')
 								                   .update(req.body.password)
 								                   .digest('hex');
 								if (entity.password_hash !== password_hash) {
+									console.log('Incorrect Password');
 									throw new Error('Incorrect Password');
 								}
 							} catch (err){
@@ -248,6 +258,7 @@ router.route('/:id/deactivate')
 									res.status(400);
 									res.json({ message: 'Malformed Request' });
 								} else {
+									console.log('Password Hash Error');
 							  		res.status(500);
 							  		res.json({ message: 'Internal Server Error' });
 							  	}
@@ -268,8 +279,9 @@ router.route('/:id/deactivate')
 							delete data["password_hash"];
 							delete data["stripe_id"];
 							res.status(200);
-							res.json(data);
+							res.json({ active: false });
 						} else { // If there is datastore error
+							console.log('Error Saving New User Entity');
 							res.status(500);
 					  		res.json({ message: 'Internal Server Error' });
 						}
