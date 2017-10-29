@@ -277,8 +277,6 @@ router.route('/:id/deactivate')
 						data: data
 					}, function(err, entity) {
 						if (!err) { // If update success
-							delete data["password_hash"];
-							delete data["stripe_id"];
 							res.status(200);
 							res.json({ active: false });
 						} else { // If there is datastore error
