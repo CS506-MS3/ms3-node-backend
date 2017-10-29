@@ -106,6 +106,9 @@ router.route('/')
 										}
 									}, secret.token_secret, { expiresIn: '14d' });
 
+			                        console.log(entity.email);
+			                        console.log(entity.wishlist); 
+
 									res.json({
 										token: token,
 								    	user: {
