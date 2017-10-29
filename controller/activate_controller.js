@@ -48,49 +48,76 @@ router.route('/')
 				}
 			} catch (err) {
 				valid = false;
+				console.log('Incorrect Token Payload');
 				res.status(401);
 				res.json({ message: 'Invalid Activation Token' });
 			}
 		}
 
-		var key = {
-			kind: 'User_V1',
-			id: decoded.data.id
-		};
-		var data = {};
+		if (valid === true) {
+			var key = {
+				kind: 'User_V1',
+				id: decoded.data.id
+			};
+			var data = {};
 		
-		datastore.get(key, function(err, entity) {
-				if (err) { // If there is datastore error
-					valid = false;
-			  		res.status(500);
-			  		res.json({ message: 'Internal Error' });
-				} else if (entity === undefined) { // If user entity is not found
-			  		valid = false;
-			  		res.status(404);
-			  		res.json({ message: 'Not found' });
-			  	} else {
-			  		if (entity.active == true) { // If user entity is already active
-			  			valid = false;
-						res.status(400);
-						res.json({ message: 'Error Updating Entity' });
-			  		} else { // If active user entity found
-			  			data = entity;
-			  		}
-			  	}
-			  	if (valid == true) {
-					data.active = true;
-					datastore.save({
-						key: key,
-						data: data
-					}, function(err, entity) {
-						if (!err) { // If update success
-							res.status(200);
-							res.json(data);
-						} else { // If there is datastore error
-							res.status(500);
-					  		res.json({ message: 'Internal Error' });
-						}
-					});
-				}
-			});
+			datastore.get(key, function(err, entity) {
+					if (err) { // If there is datastore error
+						valid = false;
+						console.log('Error Running User Query');
+				  		res.status(500);
+				  		res.json({ message: 'Internal Server Error' });
+					} else if (entity === undefined) { // If user entity is not found
+				  		valid = false;
+				  		console.log('Incorrect User Id In Payload');
+				  		res.status(401);
+				  		res.json({ message: 'Invalid Activation Token' });
+				  	} else {
+				  		if (entity.active == true) { // If user entity is already active
+				  			valid = false;
+				  			console.log('Account Already Activated');
+							res.status(409);
+							res.json({ message: 'Account Already Activated' });
+				  		} else { // If active user entity found
+				  			if (decoded.data.email !== entity.email) {
+				  				valid = false;
+						  		console.log('Incorrect User Email In Payload');
+						  		res.status(401);
+						  		res.json({ message: 'Invalid Activation Token' });
+				  			} else {
+				  				data = entity;
+				  			}
+				  		}
+				  	}
+				  	if (valid == true) {
+						data.active = true;
+						datastore.save({
+							key: key,
+							data: data
+						}, function(err, entity) {
+							if (!err) { // If update success
+								res.status(200);
+		                        token = jwt.sign({
+									data: {
+										id : entity.id,
+										email : entity.email,
+										type : 'user'
+									}
+								}, secret.token_secret, { expiresIn: '14d' });
+
+								res.json({
+									token: token,
+							    	user: {
+										email: entity.email,
+										wishlist: entity.wishlist
+									}
+								});
+							} else { // If there is datastore error
+								res.status(500);
+						  		res.json({ message: 'Internal Server Error' });
+							}
+						});
+					}
+				});
+		}
 	});
