@@ -20,13 +20,45 @@ router.route('/')
 	
 	.get(function(req, res){
 		// TODO JWT token auth
+
+		var valid = true;
+		var token = req.query.token;
+		var decoded = {};
+
+		// check if token provided
+		if (token === undefined) {
+			valid = false;
+			console.log('Missing Token In Query');
+			res.status(401);
+			res.json({ message : "Invalid Activation Token" });
+		}
+
+		// check if token payload missing property or expired
+		if (valid === true) {
+			try {
+				decoded = jwt.verify(token, secret.token_secret);
+				if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
+					console.log('Missing JWT Payload Property');
+					throw new Error('Missing JWT Payload Property');
+				} else {
+					if (decoded.data.type !== 'activation') {
+						console.log('Invalid Token Payload');
+						throw new Error('Invalid Token Payload');
+					}
+				}
+			} catch (err) {
+				valid = false;
+				res.status(401);
+				res.json({ message: 'Invalid Activation Token' });
+			}
+		}
+
 		var key = {
 			kind: 'User_V1',
-			id: req.params.id
+			id: decoded.data.id
 		};
 		var data = {};
-		var valid = true;
-
+		
 		datastore.get(key, function(err, entity) {
 				if (err) { // If there is datastore error
 					valid = false;

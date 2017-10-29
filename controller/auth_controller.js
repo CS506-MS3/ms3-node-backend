@@ -82,7 +82,8 @@ router.route('/')
 							if (!err && entities.length == 0) {
 		                    		var key = datastore.key(['Token_Blacklist_V1']);
 									var data = {
-										token : token
+										token : token,
+										exp : decoded.exp
 									};
 									datastore.save({
 										key: key,
