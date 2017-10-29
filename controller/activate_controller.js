@@ -94,9 +94,9 @@ router.route('/')
 						datastore.save({
 							key: key,
 							data: data
-						}, function(err, entity) {
+						}, function(err) {
 							console.log(entity);
-							
+
 							if (!err) { // If update success
 								try {
 									res.status(200);

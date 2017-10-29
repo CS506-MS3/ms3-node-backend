@@ -275,7 +275,7 @@ router.route('/:id/deactivate')
 					datastore.save({
 						key: key,
 						data: data
-					}, function(err, entity) {
+					}, function(err) {
 						if (!err) { // If update success
 							res.status(200);
 							res.json({ active: false });
