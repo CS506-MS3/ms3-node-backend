@@ -96,22 +96,27 @@ router.route('/')
 							data: data
 						}, function(err, entity) {
 							if (!err) { // If update success
-								res.status(200);
-		                        token = jwt.sign({
-									data: {
-										id : entity.id,
-										email : entity.email,
-										type : 'user'
-									}
-								}, secret.token_secret, { expiresIn: '14d' });
+								try {
+									res.status(200);
+			                        token = jwt.sign({
+										data: {
+											id : entity.id,
+											email : entity.email,
+											type : 'user'
+										}
+									}, secret.token_secret, { expiresIn: '14d' });
 
-								res.json({
-									token: token,
-							    	user: {
-										email: entity.email,
-										wishlist: entity.wishlist
-									}
-								});
+									res.json({
+										token: token,
+								    	user: {
+											email: entity.email,
+											wishlist: entity.wishlist
+										}
+									});
+								} catch (err){
+									res.status(500);
+						  			res.json({ message: 'Internal Server Error' });
+								}
 							} else { // If there is datastore error
 								res.status(500);
 						  		res.json({ message: 'Internal Server Error' });
