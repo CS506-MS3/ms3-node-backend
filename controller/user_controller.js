@@ -157,34 +157,46 @@ router.route('/:id/deactivate')
 	.put(function(req, res){
 		var valid = true;
 
-		if (req.body.active === undefined || req.body.active != false) {
+		try {
+			var token = req.get('token')
+			var decoded = jwt.verify(token, secret.token_secret);
+		} catch (err) {
+			res.status(401);
+			res.json({ message: 'Invalid Auth Token' });
 			valid = false;
-			res.status(400);
-			res.json({ message: 'Missing valid property' });
 		}
+
 		
-		var key = {
-			kind: 'User_V1',
-			id: req.params.id
-		};
-		var data = {};
+		if (valid == true) {
+			if (req.body.active === undefined || req.body.active != false) {
+				valid = false;
+				res.status(400);
+				res.json({ message: 'Malformed Request' });
+			}
+		}
 
 		if (valid == true) {
+			var key = {
+				kind: 'User_V1',
+				id: req.params.id
+			};
+			var data = {};
+
 			datastore.get(key, function(err, entity) {
 				if (err) { // If there is datastore error
 					valid = false;
 					console.error(err);
 			  		res.status(500);
-			  		res.json({ message: 'Internal Error' });
+			  		res.json({ message: 'Internal Server Error' });
 				} else if (entity === undefined) { // If user entity is not found
 			  		valid = false;
 			  		res.status(404);
-			  		res.json({ message: 'Not found' });
+			  		res.json({ message: 'User Resource Does Not Exist' });
 			  	} else {
 			  		if (entity.active == false) { // If user entity is already inactive
 			  			valid = false;
-						res.status(400);
-						res.json({ message: 'Error Updating Entity' });
+						res.status(409);
+						res.json({ message: 'Account Already Inactive' });
 			  		} else { // If active user entity found
 			  			data = entity;
 			  		}
@@ -201,12 +213,13 @@ router.route('/:id/deactivate')
 						} else { // If there is datastore error
 							console.error(err);
 							res.status(500);
-					  		res.json({ message: 'Internal Error' });
+					  		res.json({ message: 'Internal Server Error' });
 						}
 					});
 				}
 			});
 		}
+
 	});
 
 module.exports = router;
