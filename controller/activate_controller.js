@@ -95,6 +95,8 @@ router.route('/')
 							key: key,
 							data: data
 						}, function(err, entity) {
+							console.log(entity);
+							
 							if (!err) { // If update success
 								try {
 									res.status(200);
