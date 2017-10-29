@@ -9,9 +9,15 @@ app.use(bodyParser.json());
 // TODO /api/users
 var userController = require('./controller/user_controller'); // import user controller module (user_controller.js) from controller dir
 var authController = require('./controller/auth_controller');
+var reactivateController = require('./controller/reactivate_controller');
+var activateController = require('./controller/activate_controller');
+
 
 router.use('/users', userController); // mount /api/users to user controller module
 router.use('/auth', authController);
+router.use('/reactivate', reactivateController);
+router.use('/activate', activateController);
+
 
 // TODO /api/authenticate
 // TODO /api/access
