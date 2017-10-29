@@ -156,16 +156,57 @@ router.route('/:id/deactivate')
 	// PUT /api/users/:id/deactivate
 	.put(function(req, res){
 		var valid = true;
-
+		var token = '';
+		var decoded = {};
+		// sync verify if token valid
 		try {
-			var token = req.get('token')
-			var decoded = jwt.verify(token, secret.token_secret);
+			token = req.get('token')
+			decoded = jwt.verify(token, secret.token_secret);
+			if (decoded.id === undefined || decoded.email === undefined || decoded.type === undefined) {
+				throw new Error('Missing JWT Payload Property');
+			} else {
+				if (decoded.id !== req.params.id) {
+					// employee token id will be different from user id in url params
+					if (decoded.type !== 'employee') {
+						throw new Error('User Id Mismatch');
+					}
+				}
+			}
 		} catch (err) {
 			res.status(401);
 			res.json({ message: 'Invalid Auth Token' });
 			valid = false;
 		}
 
+		// check if password property sent if token type is user
+		if (valid == true) {
+			if (decoded.type !== 'employee') {
+				if (req.body.password === undefined) {
+					res.status(400);
+					res.json({ message: 'Malformed Request' });
+					valid = false;
+				}
+			}
+		}
+
+		// check if token in token blacklist
+		if (valid == true) {
+			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', token);
+			datastore.runQuery(query, function(err, entities) {
+				if (err) {
+					console.log(err);
+					res.status(500);
+					res.json({ message: 'Internal Server Error' });
+					valid = false;
+				} else {
+					if (entities.length != 0) {
+						res.status(401);
+						res.json({ message: 'Invalid Auth Token' });
+			        	valid = false;
+			        }
+	            }
+			});
+		}
 		
 		if (valid == true) {
 			if (req.body.active === undefined || req.body.active != false) {
