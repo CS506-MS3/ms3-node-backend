@@ -160,14 +160,14 @@ router.route('/:id/deactivate')
 		var decoded = {};
 		// sync verify if token valid
 		try {
-			token = req.get('token')
+			token = req.get('token');
 			decoded = jwt.verify(token, secret.token_secret);
 			if (decoded.id === undefined || decoded.email === undefined || decoded.type === undefined) {
 				throw new Error('Missing JWT Payload Property');
 			} else {
 				if (decoded.id !== req.params.id) {
 					// employee token id will be different from user id in url params
-					if (decoded.type !== 'employee') {
+					if (decoded.type === 'user') {
 						throw new Error('User Id Mismatch');
 					}
 				}
@@ -178,9 +178,9 @@ router.route('/:id/deactivate')
 			valid = false;
 		}
 
-		// check if password property sent if token type is user
-		if (valid == true) {
-			if (decoded.type !== 'employee') {
+		// for users, check if password property in request body
+		if (valid === true) {
+			if (decoded.type === 'user') {
 				if (req.body.password === undefined) {
 					res.status(400);
 					res.json({ message: 'Malformed Request' });
@@ -190,11 +190,10 @@ router.route('/:id/deactivate')
 		}
 
 		// check if token in token blacklist
-		if (valid == true) {
+		if (valid === true) {
 			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', token);
 			datastore.runQuery(query, function(err, entities) {
 				if (err) {
-					console.log(err);
 					res.status(500);
 					res.json({ message: 'Internal Server Error' });
 					valid = false;
@@ -207,16 +206,9 @@ router.route('/:id/deactivate')
 	            }
 			});
 		}
-		
-		if (valid == true) {
-			if (req.body.active === undefined || req.body.active != false) {
-				valid = false;
-				res.status(400);
-				res.json({ message: 'Malformed Request' });
-			}
-		}
 
-		if (valid == true) {
+		// 
+		if (valid === true) {
 			var key = {
 				kind: 'User_V1',
 				id: req.params.id
@@ -234,7 +226,7 @@ router.route('/:id/deactivate')
 			  		res.status(404);
 			  		res.json({ message: 'User Resource Does Not Exist' });
 			  	} else {
-			  		if (entity.active == false) { // If user entity is already inactive
+			  		if (entity.active === false) { // If user entity is already inactive
 			  			valid = false;
 						res.status(409);
 						res.json({ message: 'Account Already Inactive' });
@@ -242,7 +234,7 @@ router.route('/:id/deactivate')
 			  			data = entity;
 			  		}
 			  	}
-			  	if (valid == true) {
+			  	if (valid === true) {
 					data.active = false;
 					datastore.save({
 						key: key,
