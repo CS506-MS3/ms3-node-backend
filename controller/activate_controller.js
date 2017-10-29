@@ -95,8 +95,6 @@ router.route('/')
 							key: key,
 							data: data
 						}, function(err) {
-							console.log(secret.token_secret);
-
 							if (!err) { // If update success
 								try {
 									res.status(200);
@@ -108,9 +106,6 @@ router.route('/')
 										}
 									}, secret.token_secret, { expiresIn: '14d' });
 
-			                        console.log(entity.email);
-			                        console.log(entity.wishlist); 
-
 									res.json({
 										token: token,
 								    	user: {
@@ -118,7 +113,7 @@ router.route('/')
 											wishlist: entity.wishlist
 										}
 									});
-								} catch (err){
+								} catch (err){ // error generating token
 									res.status(500);
 						  			res.json({ message: 'Internal Server Error' });
 								}
