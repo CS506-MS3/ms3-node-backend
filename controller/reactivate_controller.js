@@ -18,39 +18,60 @@ router.use(function timeLog (req, res, next) {
 router.route('/')
 	
 	.post(function(req, res){
-
 		try {
 				if (
 					req.body.email === undefined
-				){ 
+				){  
+					console.log("Malformed Request");
 					res.status(400);
 					res.json({ message: "Invalid Syntax" });
 					throw new Error('Invalid Syntax');
 				}
 				const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
-				datastore.runQuery(query)
-		                .then((results) => {
-		                        const users = results[0];
-		                        if (users.length === 0) {
-		                               	res.status(404);
-		                               	res.json({ message: "User Not Found" });
-		                        } else {
-		                        		if (users[0].data.active !== false) {
-		                        			res.status(409);
-		                        			res.json({ message: "Account Already Active" });
-		                        		} else {
-		                        			// TODO Generate Token, send through nodemailer
-		                        		}
-		                        }
-		                })
-						.catch((err) => {
-								res.status(500);
-								res.json({ message: "Error" });
-						});
-			} catch (err){
-				if (err.message !== 'Invalid Syntax') {
+				datastore.runQuery(query, function(err, entities) {
+					var entity = entities[0];
+					if (err) { // error running query
+						console.log('Error Running User Query');
 						res.status(500);
-						res.json({ message: "Error" });
-				}
+						res.json({ message: 'Internal Server Error' });
+					} else if (entity === undefined) { // If user entity is not found
+				  		console.log('User Entity Not Found');
+				  		res.status(404);
+				  		res.json({ message: 'User Resource Does Not Exist' });
+		            } else {
+		            	if (entity.active === true) {
+				  			console.log('Account Already Active');
+							res.status(409);
+							res.json({ message: 'Account Already Active' });
+		            	} else {
+		            		try {
+			            		// generate activation token
+			            		var token = jwt.sign({
+									data: {
+										id : entity[datastore.KEY].id,
+										email : entity.email,
+										type : 'activation'
+									}
+								}, secret.token_secret, { expiresIn: '14d' });
+
+			            		console.log(token);
+			            		// TODO nodemailer
+			            		res.status(200);
+			            		res.json({ token: token })
+		            		} catch(err){
+		            			console.log(err);
+		            			res.status(500);
+								res.json({ message: "Internal Server Error" });
+		            		}
+		            	}
+		            }
+				});
+		} catch (err){
+			if (err.message !== 'Invalid Syntax') {
+				res.status(500);
+				res.json({ message: "Internal Server Error" });
 			}
+		}
 	});
+
+module.exports = router;
