@@ -95,7 +95,7 @@ router.route('/')
 							key: key,
 							data: data
 						}, function(err) {
-							console.log(entity);
+							console.log(secret.token_secret);
 
 							if (!err) { // If update success
 								try {
