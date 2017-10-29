@@ -3,6 +3,7 @@ var router = express.Router();
 var bodyParser = require('body-parser');
 var secret = require('../secret/secret.json')
 var jwt = require('jsonwebtoken');
+var crypto = require('crypto');
 
 const Datastore = require('@google-cloud/datastore');
 const datastore = Datastore();
