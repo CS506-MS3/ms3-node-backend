@@ -54,6 +54,7 @@ router.route('/')
 				                	res.locals.id = user_key.id;
 				                	delete user_data["password_hash"];
 									delete user_data["stripe_id"];
+									delete user_data["active"];
 									res.locals.user_data = user_data;
 				                    next();	
 				                }
