@@ -18,14 +18,14 @@ router.use(function timeLog (req, res, next) {
 
 router.route('/')
 
-	.post(function(req, res, next){
+	.post(function(req, res, next){ // verify request body
 		if (req.body.email === undefined || req.body.password === undefined) {
 			res.status(400);
 			res.json({ message: "Malformed Request" });
 		} else {
 			next();
 		}
-	}, function(req, res, next) {
+	}, function(req, res, next) { // verify user entity exists and active
 		try {
 			const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
 			datastore.runQuery(query, function(err, entities) {
@@ -71,7 +71,7 @@ router.route('/')
 			res.status(500);
 			res.json({ message: "Internal Server Error" });
 		}
-	}, function(req, res){
+	}, function(req, res){ // generate user auth token and return summarized user info
 		try {
 			var token = jwt.sign({
 				data: {
@@ -93,10 +93,13 @@ router.route('/')
 		}
 	})
 
-	.delete(function(req, res, next){
+	.delete(function(req, res, next){ // verify JWT token, verify token payload
 		try {
 			var token = req.get('token')
 			var decoded = jwt.verify(token, secret.token_secret);
+			if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
+				throw new Error('Missing JWT Payload Property');
+			}
 			res.locals.token = token;
 			res.locals.decoded = decoded;
 			next();
@@ -104,7 +107,7 @@ router.route('/')
 			console.error(err);
 			res.status(204).send();
 		}
-	}, function(req, res, next){
+	}, function(req, res, next){ // verify JWT token is not already blacklisted
 		try {
 			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
 			datastore.runQuery(query, function(err, entities) {
@@ -129,7 +132,7 @@ router.route('/')
 			console.error(err);
 			res.status(204).send();
 		}
-	}, function(req, res){
+	}, function(req, res){ // add token to token blacklist
 		datastore.save({
 			key: res.locals.token_key,
 			data: res.locals.token_data

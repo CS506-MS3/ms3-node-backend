@@ -18,9 +18,42 @@ router.use(function timeLog (req, res, next) {
 
 router.route('/')
 	
-	.get(function(req, res){
-		// TODO JWT token auth
-
+	.get(function(req, res, next){ // verify JWT token, verify token payload
+		try {
+			var token = req.get('token');
+			var decoded = jwt.verify(token, secret.token_secret);
+			if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
+				throw new Error('Missing JWT Payload Property');
+			} else if (decoded.data.type === 'user') {
+				throw new Error('Employee Only');
+			} else {
+				res.locals.token = token;
+				res.locals.decoded = decoded;
+				next();
+			}
+		} catch (err) {
+			console.error(err);
+			res.status(401);
+			res.json({ message: 'Invalid Auth Token' });
+		}
+	}, function(req, res, next){ // verify JWT token is not in token blacklist
+		const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
+		datastore.runQuery(query, function(err, entities) {
+			if (err) {
+				console.error('Error Running Token Blacklist Query');
+				res.status(500);
+				res.json({ message: 'Internal Server Error' });
+			} else {
+				if (entities.length != 0) {
+					console.error('Blacklisted Token');
+					res.status(401);
+					res.json({ message: 'Invalid Auth Token' });	
+		        } else {
+		        	next();
+		        }
+            }
+		});
+	}, function(req, res, next){
 		var valid = true;
 		var token = req.query.token;
 		var decoded = {};

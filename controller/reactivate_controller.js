@@ -17,19 +17,18 @@ router.use(function timeLog (req, res, next) {
 
 router.route('/')
 	
-	.post(function(req, res, next){
+	.post(function(req, res, next){ // verify request body
 		if (req.body.email === undefined) {
-			console.error('Malformed Request');
 			res.status(400);
 			res.json({ message: 'Malformed Request' });
 		} else {
 			next();
 		}
-	}, function(req, res, next){
+	}, function(req, res, next){ // verify user entity exists and inactive
 		try {
 			const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
 			datastore.runQuery(query, function(err, entities) {
-				if (err) { // error running query
+				if (err) {
 					console.error(err);
 					res.status(500);
 					res.json({ message: 'Internal Server Error' });
@@ -56,7 +55,9 @@ router.route('/')
 			res.status(500);
 			res.json({ message: 'Internal Server Error' });
 		}
-	}, function(req, res) {
+	}, function(req, res, next) { // TODO verify user entity not in user blacklist
+		next();
+	}, function(req, res) { // activate user entity
 		try {
     		var token = jwt.sign({
 				data: {
@@ -67,6 +68,8 @@ router.route('/')
 			}, secret.token_secret, { expiresIn: '1h' });
 
     		// TODO nodemailer
+    		// TODO modify success response message
+
     		res.status(200);
     		res.json({ 
     			token: token 
