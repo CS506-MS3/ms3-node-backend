@@ -104,38 +104,40 @@ router.route('/')
 					console.error("Invalid Token");
 					res.status(204).send();
 				}
-		}, function(req, res){
-				try {
-					const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
-					datastore.runQuery(query, function(err, entities) {
-						if (err) {
-							console.error("Run Query Error");
-						} else {
-							if (entities.length == 0) {
-				                var key = datastore.key(['Token_Blacklist_V1']);
-								var data = {
-									token : res.locals.token,
-									exp : res.locals.decoded.exp
-								};
-								datastore.save({
-									key: key,
-									data: data
-								}, function(err) {
-									if (err) {
-										console.error(err);
-									} else{
-										console.log("Token blacklisted");
-									}
-								});
-			                } else {
-			                	console.error("Token already blacklisted");
-		                    }
-						}
-					});
-				} catch (err) {
-					console.error("Create Query Error");
-				}
+		}, function(req, res, next){
+			try {
+				const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
+				datastore.runQuery(query, function(err, entities) {
+					if (err) {
+						console.error("Run Query Error");
+					} else {
+						if (entities.length == 0) {
+			                res.locals.token_key = datastore.key(['Token_Blacklist_V1']);
+							res.locals.token_data = {
+								token : res.locals.token,
+								exp : res.locals.decoded.exp
+							};
+							next();
+		                } else {
+		                	console.error("Token already blacklisted");
+		                	res.status(204).send();
+	                    }
+					}
+				});
+			} catch (err) {
+				console.error("Create Query Error");
 				res.status(204).send();
+			}
+		}, function(req, res){
+			datastore.save({
+				key: res.locals.token_key,
+				data: res.locals.token_data
+			}, function(err) {
+				if (err) {
+					console.error(err);
+				}
+			});
+			res.status(204).send();
 		});
 
 
