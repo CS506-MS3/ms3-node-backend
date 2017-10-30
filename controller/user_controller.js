@@ -42,56 +42,64 @@ router.route('/')
 			try {
 				if (
 					req.body.email === undefined ||
-					req.body.password_hash === undefined || req.body.notification === undefined
+					req.body.password === undefined || req.body.notification === undefined
 				){ 
 					res.status(400);
 					res.json({ message: "Invalid Syntax" });
 					throw new Error('Invalid Syntax');
 				}
 				const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
-				datastore.runQuery(query)
-		                .then((results) => {
-		                        const users = results[0];
-		                        if (users.length != 0) {
-		                               	res.status(409);
-		                               	res.json({ message: "User Already Exists" });
-		                        } else {
-		                        	var key = datastore.key(['User_V1']);
-									var data = {
-										bid : {},
-										wishlist : [],
-										access : {},
-										phone : (req.body.phone === undefined) ? 0 : req.body.phone,
-										listing : [],
-										stripe_id : 0,
-										active : false,
-										email : req.body.email,
-										password_hash : req.body.password_hash,
-										notification : req.body.notification
-									};
-									datastore.save({
-									  	key: key,
-										excludeFromIndexes: ["phone", "password_hash"],
-						 				data: data
-									}, function(err) {
-							  				if (!err) {
-							    				res.status(201);
-												res.json({ message: "Created" });
-								 			} else {
-								 				res.status(500);
-												res.json({ message: "Error" });
-											}
-									});
-		                        }
-		                })
-						.catch((err) => {
+				datastore.runQuery(query, function(err, entities) {
+					var entity = entities[0];
+					if (err) { // error running query
+						console.log('Error Running User Query');
+						res.status(500);
+						res.json({ message: 'Internal Server Error' });
+					} else if (entity !== undefined) { // If user entity is found
+				  		console.log('Account Already Exists');
+				  		res.status(409);
+				  		res.json({ message: 'Account Already Exists' });
+		            } else {
+		            	// generate password hash
+		            	var password_hash = crypto.createHmac('sha256', secret.password_secret)
+							.update(req.body.password)
+		                    .digest('hex');
+		               	var key = datastore.key(['User_V1']);
+						var data = {
+							bid : {},
+							wishlist : [],
+							access : {},
+							phone : (req.body.phone === undefined) ? 0 : req.body.phone,
+							listing : [],
+							stripe_id : 0,
+							active : false,
+							email : req.body.email,
+							password_hash : password_hash,
+							notification : req.body.notification
+						};
+
+						// create user entity
+						datastore.save({
+						  	key: key,
+							excludeFromIndexes: ["phone", "password_hash"],
+							data: data
+						}, function(err) {
+			  				if (!err) {
+			    				res.status(201);
+								res.json({ message: "Created" });
+								// TODO nodemailer
+				 			} else {
 								res.status(500);
 								res.json({ message: "Error" });
+							}
 						});
+		            }
+		        });
+
 			} catch (err){
 				if (err.message !== 'Invalid Syntax') {
 						res.status(500);
-						res.json({ message: "Error" });
+						res.json({ message: "Internal Server Error" });
 				}
 			}
 	});
