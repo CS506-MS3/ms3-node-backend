@@ -78,7 +78,7 @@ router.route('/')
 						res.status(409);
 						res.json({ message: 'Account Already Active' });
 			  		} else {
-			  			if (decoded.data.email !== entity.email) {
+			  			if (res.locals.decoded.data.email !== entity.email) {
 					  		console.error('Incorrect User Email In Payload');
 					  		res.status(401);
 					  		res.json({ message: 'Invalid Activation Token' });
