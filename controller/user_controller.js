@@ -11,6 +11,11 @@ const datastore = Datastore();
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
+router.use(function timeLog (req, res, next) {
+  console.log('In User Controller @ Time: ', Date.now());
+  next();
+});
+
 // controller for /api/users
 router.route('/')
 	// GET /api/users
