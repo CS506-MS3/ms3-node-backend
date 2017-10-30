@@ -19,7 +19,7 @@ router.use(function timeLog (req, res, next) {
 router.route('/')
 
 	.post(function(req, res, next){
-		if (req.body.email === undefined || req.body.password === undefined){ 
+		if (req.body.email === undefined || req.body.password === undefined) {
 			res.status(400);
 			res.json({ message: "Malformed Request" });
 		} else {
@@ -34,14 +34,14 @@ router.route('/')
 					res.status(500);
 					res.json({ message: "Internal Server Error" });
 				} else {
-					try {
-                    	var password_hash = crypto.createHmac('sha256', secret.password_secret)
-							.update(req.body.password)
-							.digest('hex');
-						if (entities.length == 0) {
-			                res.status(401);
-			                res.json({ message: "Invalid Email/Password Combo" });
-			            } else {
+					if (entities.length == 0) {
+			            res.status(401);
+			            res.json({ message: "Invalid Email/Password Combo" });
+			        } else {
+						try {
+	                    	var password_hash = crypto.createHmac('sha256', secret.password_secret)
+								.update(req.body.password)
+								.digest('hex');
 			                var user_data = entities[0];
 			                var user_key = entities[0][datastore.KEY];
 			                if (user_data.active === false){
@@ -58,16 +58,16 @@ router.route('/')
 								res.locals.user_data = user_data;
 			                    next();	
 			                }
-			            }
-					} catch (err) {
-						console.error(err);
-						res.status(500);
-						res.json({ message: "Internal Server Error" });
+						} catch (err) {
+							console.error(err);
+							res.status(500);
+							res.json({ message: "Internal Server Error" });
+						}
 					}
 				}
 			});
 		} catch (err) {
-			console.error("Create Query Error");
+			console.error(err);
 			res.status(500);
 			res.json({ message: "Internal Server Error" });
 		}
@@ -101,7 +101,7 @@ router.route('/')
 			res.locals.decoded = decoded;
 			next();
 		} catch (err) {
-			console.error("Invalid Token");
+			console.error(err);
 			res.status(204).send();
 		}
 	}, function(req, res, next){
@@ -109,7 +109,7 @@ router.route('/')
 			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
 			datastore.runQuery(query, function(err, entities) {
 				if (err) {
-					console.error("Run Query Error");
+					console.error(err);
 					res.status(204).send();
 				} else {
 					if (entities.length == 0) {
@@ -126,7 +126,7 @@ router.route('/')
 				}
 			});
 		} catch (err) {
-			console.error("Create Query Error");
+			console.error(err);
 			res.status(204).send();
 		}
 	}, function(req, res){

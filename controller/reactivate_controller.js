@@ -17,60 +17,64 @@ router.use(function timeLog (req, res, next) {
 
 router.route('/')
 	
-	.post(function(req, res){
+	.post(function(req, res, next){
+		if (req.body.email === undefined) {
+			console.error('Malformed Request');
+			res.status(400);
+			res.json({ message: 'Malformed Request' });
+		} else {
+			next();
+		}
+	}, function(req, res, next){
 		try {
-				if (
-					req.body.email === undefined
-				){  
-					console.log("Malformed Request");
-					res.status(400);
-					res.json({ message: "Invalid Syntax" });
-					throw new Error('Invalid Syntax');
-				}
-				const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
-				datastore.runQuery(query, function(err, entities) {
-					var entity = entities[0];
-					if (err) { // error running query
-						console.log('Error Running User Query');
-						res.status(500);
-						res.json({ message: 'Internal Server Error' });
-					} else if (entity === undefined) { // If user entity is not found
-				  		console.log('User Entity Not Found');
-				  		res.status(404);
-				  		res.json({ message: 'User Resource Does Not Exist' });
-		            } else {
-		            	if (entity.active === true) {
-				  			console.log('Account Already Active');
+			const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
+			datastore.runQuery(query, function(err, entities) {
+				if (err) { // error running query
+					console.error(err);
+					res.status(500);
+					res.json({ message: 'Internal Server Error' });
+				} else {
+					if (entities.length == 0) {
+					  	res.status(404);
+					  	res.json({ message: 'User Resource Does Not Exist' });
+			        } else {
+			        	var user_data = entities[0];
+			            var user_key = entities[0][datastore.KEY];
+		            	if (user_data.active === true) {
 							res.status(409);
 							res.json({ message: 'Account Already Active' });
 		            	} else {
-		            		try {
-			            		// generate activation token
-			            		var token = jwt.sign({
-									data: {
-										id : entity[datastore.KEY].id,
-										email : entity.email,
-										type : 'activation'
-									}
-								}, secret.token_secret, { expiresIn: '1h' });
-
-			            		console.log(token);
-			            		// TODO nodemailer
-			            		res.status(200);
-			            		res.json({ token: token })
-		            		} catch(err){
-		            			console.log(err);
-		            			res.status(500);
-								res.json({ message: "Internal Server Error" });
-		            		}
+		            		res.locals.id = user_key.id;
+		            		res.locals.user_data = user_data;
+			                next();	
 		            	}
-		            }
-				});
-		} catch (err){
-			if (err.message !== 'Invalid Syntax') {
-				res.status(500);
-				res.json({ message: "Internal Server Error" });
-			}
+		        	}
+	        	}
+			});
+		} catch (err) {
+			console.error(err);
+			res.status(500);
+			res.json({ message: 'Internal Server Error' });
+		}
+	}, function(req, res) {
+		try {
+    		var token = jwt.sign({
+				data: {
+					id : res.locals.id,
+					email : res.locals.user_data.email,
+					type : 'activation'
+				}
+			}, secret.token_secret, { expiresIn: '1h' });
+
+    		// TODO nodemailer
+    		res.status(200);
+    		res.json({ 
+    			token: token 
+    		})
+		} catch(err){
+			console.error(err);
+			res.status(500);
+			res.json({ message: 'Internal Server Error' });
 		}
 	});
 
