@@ -24,7 +24,7 @@ router.route('/')
 			var decoded = jwt.verify(token, secret.token_secret);
 			if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
 				throw new Error('Missing JWT Payload Property');
-			} else if (decoded.data.type !== 'employee') { // TODO add verification for super admin - Iteration 2
+			} else if (token === undefined && decoded.data.type !== 'employee') { // TODO add verification for super admin - Iteration 2
 				throw new Error('Employee Only');
 			} else {
 				res.locals.decoded = decoded;
