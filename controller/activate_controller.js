@@ -101,7 +101,7 @@ router.route('/')
 		}, function(err) {
 			if (!err) {
 				try {
-                    token = jwt.sign({
+                    var auth_token = jwt.sign({
 						data: {
 							id : res.locals.user_key.id,
 							email : res.locals.user_data.email,
@@ -111,7 +111,7 @@ router.route('/')
 
                     res.status(200);
 					res.json({
-						token: res.locals.token,
+						token: auth_token,
 				    	user: {
 							email: res.locals.user_data.email,
 							wishlist: res.locals.user_data.wishlist
