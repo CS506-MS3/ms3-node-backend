@@ -93,7 +93,7 @@ router.route('/')
 		}
 	})
 
-	.delete(function(req, res, next){ // verify JWT token, verify token payload
+	.delete(function(req, res, next){ // verify JWT auth token, verify token payload
 		try {
 			var token = req.get('token')
 			var decoded = jwt.verify(token, secret.token_secret);
@@ -107,7 +107,7 @@ router.route('/')
 			console.error(err);
 			res.status(204).send();
 		}
-	}, function(req, res, next){ // verify JWT token is not already blacklisted
+	}, function(req, res, next){ // verify JWT auth token is not already blacklisted
 		try {
 			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
 			datastore.runQuery(query, function(err, entities) {

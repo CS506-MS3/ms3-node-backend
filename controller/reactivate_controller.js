@@ -55,7 +55,7 @@ router.route('/')
 			res.status(500);
 			res.json({ message: 'Internal Server Error' });
 		}
-	}, function(req, res, next) { // TODO verify user entity not in user blacklist
+	}, function(req, res, next) { // TODO verify user entity not in user blacklist - Iteration 2
 		next();
 	}, function(req, res) { // activate user entity
 		try {

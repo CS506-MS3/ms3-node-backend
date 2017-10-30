@@ -24,17 +24,9 @@ router.route('/')
 		}
 		
 		const query = datastore.createQuery('User_V1');
-		datastore.runQuery(query)
-                       	.then((results) => {
-                               	const users = results[0];
-                            	res.status(200);
-								res.json(users);
-                       	})
-						.catch((err) => {
-			 				console.error('ERROR:', err);
-			                    res.status(500);
-			                    res.json({ message: "Error" });
-						});
+		datastore.runQuery(query, function(err, entities) {
+
+		});
  	})
 
 	// POST	/api/users
