@@ -70,37 +70,47 @@ router.route('/')
 
 		})
 
-		.delete(function(req, res){
+		.delete(function(req, res, next){
 				try {
 					var token = req.get('token')
 					var decoded = jwt.verify(token, secret.token_secret);
-					const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', token);
+					res.locals.token = token;
+					res.locals.decoded = decoded;
+					next();
+				} catch (err) {
+					console.error("Invalid Token");
+					res.status(204).send();
+				}
+		}, function(req, res){
+				try {
+					const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
 					datastore.runQuery(query, function(err, entities) {
-							if (err) {
-								console.log(err);
-							}
-							if (!err && entities.length == 0) {
-		                    		var key = datastore.key(['Token_Blacklist_V1']);
-									var data = {
-										token : token,
-										exp : decoded.exp
-									};
-									datastore.save({
-										key: key,
-										data: data
-									}, function(err, entity) {
-										if (err) {
-											console.error(err);
-										} else{
-											console.log("Token blacklisted");
-										}
-									});
-		                    } else {
-		                    	console.log("Token already blacklisted");
+						if (err) {
+							console.error("Run Query Error");
+						} else {
+							if (entities.length == 0) {
+				                var key = datastore.key(['Token_Blacklist_V1']);
+								var data = {
+									token : res.locals.token,
+									exp : res.locals.decoded.exp
+								};
+								datastore.save({
+									key: key,
+									data: data
+								}, function(err) {
+									if (err) {
+										console.error(err);
+									} else{
+										console.log("Token blacklisted");
+									}
+								});
+			                } else {
+			                	console.error("Token already blacklisted");
 		                    }
+						}
 					});
 				} catch (err) {
-					console.log("Invalid Token");
+					console.error("Create Query Error");
 				}
 				res.status(204).send();
 		});
