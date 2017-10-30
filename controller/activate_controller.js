@@ -20,14 +20,13 @@ router.route('/')
 	
 	.get(function(req, res, next){ // verify JWT auth token, verify token payload
 		try {
-			var token = req.get('token');
+			var token = req.query.token;
 			var decoded = jwt.verify(token, secret.token_secret);
 			if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
 				throw new Error('Missing JWT Payload Property');
 			} else if (decoded.data.type !== 'employee') { // TODO add verification for super admin - Iteration 2
 				throw new Error('Employee Only');
 			} else {
-				res.locals.token = token;
 				res.locals.decoded = decoded;
 				next();
 			}
@@ -38,7 +37,7 @@ router.route('/')
 		}
 	}, function(req, res, next){ // verify JWT auth token is not in token blacklist
 		try {
-			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
+			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', req.query.token);
 			datastore.runQuery(query, function(err, entities) {
 				if (err) {
 					console.error(err);
