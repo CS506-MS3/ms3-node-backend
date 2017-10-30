@@ -52,7 +52,7 @@ router.route('/')
 										email : entity.email,
 										type : 'activation'
 									}
-								}, secret.token_secret, { expiresIn: '14d' });
+								}, secret.token_secret, { expiresIn: '1h' });
 
 			            		console.log(token);
 			            		// TODO nodemailer

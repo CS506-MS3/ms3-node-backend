@@ -85,9 +85,26 @@ router.route('/')
 							data: data
 						}, function(err) {
 			  				if (!err) {
-			    				res.status(201);
-								res.json({ message: "Created" });
-								// TODO nodemailer
+			  					try {
+				            		// generate activation token
+				            		var token = jwt.sign({
+										data: {
+											id : key.id,
+											email : req.body.email,
+											type : 'activation'
+										}
+									}, secret.token_secret, { expiresIn: '1h' });
+
+				            		console.log(token);
+			            			// TODO nodemailer
+				            		res.status(201);
+									res.json({ message: "Created" });
+			            		} catch(err){
+			            			console.log(err);
+			            			res.status(500);
+									res.json({ message: "Internal Server Error" });
+			            		}
+
 				 			} else {
 								res.status(500);
 								res.json({ message: "Error" });
