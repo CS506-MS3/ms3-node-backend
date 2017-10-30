@@ -213,6 +213,7 @@ router.route('/:id/activate')
 					data.active = true;
 					datastore.save({
 						key: key,
+						excludeFromIndexes: ["phone", "password_hash"],
 						data: data
 					}, function(err) {
 						if (!err) { // If update success
@@ -350,6 +351,7 @@ router.route('/:id/deactivate')
 					data.active = false;
 					datastore.save({
 						key: key,
+						excludeFromIndexes: ["phone", "password_hash"],
 						data: data
 					}, function(err) {
 						if (!err) { // If update success

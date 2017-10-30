@@ -93,6 +93,7 @@ router.route('/')
 						data.active = true;
 						datastore.save({
 							key: key,
+							excludeFromIndexes: ["phone", "password_hash"],
 							data: data
 						}, function(err) {
 							if (!err) { // If update success
