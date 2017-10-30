@@ -45,7 +45,7 @@ router.route('/')
 							res.json({ message: 'Account Already Active' });
 		            	} else {
 		            		res.locals.id = user_key.id;
-		            		res.locals.user_data = user_data;
+		            		res.locals.email = user_data.email;
 			                next();	
 		            	}
 		        	}
@@ -61,7 +61,7 @@ router.route('/')
     		var token = jwt.sign({
 				data: {
 					id : res.locals.id,
-					email : res.locals.user_data.email,
+					email : res.locals.email,
 					type : 'activation'
 				}
 			}, secret.token_secret, { expiresIn: '1h' });
