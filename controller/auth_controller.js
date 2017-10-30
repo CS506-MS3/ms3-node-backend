@@ -51,10 +51,7 @@ router.route('/')
 			                    res.status(401);
 			                    res.json({ message: "Invalid Email/Password Combo" });
 			                } else {
-			                	res.locals.id = user_key.id;
-			                	delete user_data["password_hash"];
-								delete user_data["stripe_id"];
-								delete user_data["active"];
+			                	res.locals.user_key = user_key;
 								res.locals.user_data = user_data;
 			                    next();	
 			                }
@@ -73,9 +70,9 @@ router.route('/')
 		}
 	}, function(req, res){ // generate user auth token and return summarized user info
 		try {
-			var token = jwt.sign({
+			var auth_token = jwt.sign({
 				data: {
-					id : res.locals.id,
+					id : res.locals.user_key.id,
 					email : res.locals.user_data.email,
 					type : 'user'
 				}
@@ -83,8 +80,12 @@ router.route('/')
 
 			res.status(200);
 			res.json({
-				token: token,
-				data: res.locals.user_data
+				token: auth_token,
+		    	user: {
+					email: res.locals.user_data.email,
+					id: res.locals.user_key.id,
+					wishlist: res.locals.user_data.wishlist
+				}
 			});
 		} catch (err) {
 			console.error(err);

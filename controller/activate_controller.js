@@ -113,6 +113,7 @@ router.route('/')
 						token: auth_token,
 				    	user: {
 							email: res.locals.user_data.email,
+							id: res.locals.user_key.id,
 							wishlist: res.locals.user_data.wishlist
 						}
 					});
