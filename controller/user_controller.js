@@ -106,7 +106,7 @@ router.route('/')
 									  from: 'ms3.cs506@gmail.com',
 									  to: req.body.email,
 									  subject: 'MS3 Activation Link',
-									  text: 'Thank you for signing up with UW-Madison Students and Scholars Sublease. Please click the following link to activate your account. ' + activation_link + 'The activation link will expire in 1 hour.'
+									  text: 'Thank you for signing up with UW-Madison Students and Scholars Sublease. Please click the following link to activate your account. ' + activation_link + ' The activation link will expire in 1 hour.'
 									};
 
 									transporter.sendMail(mailOptions, function(err, info){
@@ -120,7 +120,7 @@ router.route('/')
 						    				res.json({ message: "Created" });
 									  	}
 									});
-									
+
 			            		} catch(err){
 			            			console.log(err);
 			            			res.status(500);
