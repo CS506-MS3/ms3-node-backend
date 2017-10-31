@@ -74,7 +74,7 @@ router.route('/')
 			  		res.status(401);
 			  		res.json({ message: 'Invalid Activation Token' });
 			  	} else {
-			  		if (entity.active == true) {
+			  		if (entity.active === true) {
 						res.status(409);
 						res.json({ message: 'Account Already Active' });
 			  		} else {
