@@ -76,14 +76,12 @@ router.route('/')
 				}
 			}, secret.token_secret, { expiresIn: '1h' });
 
-    		// TODO nodemailer
-    		// TODO modify success response message
-
+    		var activation_link = 'https://ms3-web.firebaseapp.com/account/activate?token=' + token;
     		var mailOptions = {
 			  from: 'ms3.cs506@gmail.com',
 			  to: res.locals.email,
 			  subject: 'MS3 Activation Link',
-			  text: token
+			  text: activation_link
 			};
 
 			transporter.sendMail(mailOptions, function(err, info){
