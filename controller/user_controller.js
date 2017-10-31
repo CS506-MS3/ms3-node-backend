@@ -104,7 +104,7 @@ router.route('/')
 				            		var activation_link = 'https://ms3-web.firebaseapp.com/account/activate?token=' + token;
 			            			var mailOptions = {
 									  from: 'ms3.cs506@gmail.com',
-									  to: res.locals.email,
+									  to: req.body.email,
 									  subject: 'MS3 Activation Link',
 									  text: 'Thank you for signing up with UW-Madison Students and Scholars Sublease. Please click the following link to activate your account. ' + activation_link + 'The activation link will expire in 1 hour.'
 									};
