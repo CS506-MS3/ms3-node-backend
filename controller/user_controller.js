@@ -267,7 +267,7 @@ router.route('/:id/deactivate')
 		}
 	}, function(req, res, next) { // verify JWT auth token is not already blacklisted
 		try {
-			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', req.query.token);
+			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
 			datastore.runQuery(query, function(err, entities) {
 				if (err) {
 					console.error(err);
