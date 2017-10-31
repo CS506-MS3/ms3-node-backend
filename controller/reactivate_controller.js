@@ -3,9 +3,18 @@ var router = express.Router();
 var bodyParser = require('body-parser');
 var secret = require('../secret/secret.json')
 var jwt = require('jsonwebtoken');
+var nodemailer = require('nodemailer');
 
 const Datastore = require('@google-cloud/datastore');
 const datastore = Datastore();
+
+var transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'ms3.cs506@gmail.com',
+    pass: secret.gmailpass
+  }
+});
 
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
@@ -70,10 +79,25 @@ router.route('/')
     		// TODO nodemailer
     		// TODO modify success response message
 
-    		res.status(200);
-    		res.json({ 
-    			token: token 
-    		})
+    		var mailOptions = {
+			  from: 'ms3.cs506@gmail.com',
+			  to: res.locals.email,
+			  subject: 'MS3 Activation Link',
+			  text: token
+			};
+
+			transporter.sendMail(mailOptions, function(err, info){
+			  	if (err) {
+			    	console.error(err);
+			    	res.status(500);
+					res.json({ message: 'Internal Server Error' });
+			  	} else {
+			  		console.log(info);
+			    	res.status(200);
+    				res.json({ message: "Activation Email Sent" });
+			  	}
+			});
+
 		} catch(err){
 			console.error(err);
 			res.status(500);
