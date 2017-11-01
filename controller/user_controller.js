@@ -44,34 +44,33 @@ router.route('/')
  // 	})
 
 	// POST	/api/users
-	.post(function(req, res) {
-			try {
-				if (
-					req.body.email === undefined ||
-					req.body.password === undefined || req.body.notification === undefined
-				){ 
-					res.status(400);
-					res.json({ message: "Invalid Syntax" });
-					throw new Error('Invalid Syntax');
-				}
-				const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
-				datastore.runQuery(query, function(err, entities) {
-					var entity = entities[0];
-					if (err) { // error running query
-						console.log('Error Running User Query');
-						res.status(500);
-						res.json({ message: 'Internal Server Error' });
-					} else if (entity !== undefined) { // If user entity is found
-				  		console.log('Account Already Exists');
-				  		res.status(409);
-				  		res.json({ message: 'Account Already Exists' });
-		            } else {
-		            	// generate password hash
+	.post(function(req, res, next) { // verify request body
+		if (req.body.email === undefined || req.body.password === undefined || 
+			req.body.notification === undefined || req.body.notification.marketing === undefined
+		){ 
+			res.status(400);
+			res.json({ message: "Malformed Request" });
+		} else {
+			next();
+		}
+	}, function(req, res, next) { // verify account does not already exist
+		const query = datastore.createQuery('User_V1').filter('email', '=', req.body.email);
+		datastore.runQuery(query, function(err, entities) {
+			if (err) {
+				console.error(err);
+				res.status(500);
+				res.json({ message: 'Internal Server Error' });
+			} else {
+				if (entities.length !== 0) {
+			  		res.status(409);
+			  		res.json({ message: 'Account Already Exists' });
+	            } else {
+	            	try {
 		            	var password_hash = crypto.createHmac('sha256', secret.password_secret)
 							.update(req.body.password)
 		                    .digest('hex');
-		               	var key = datastore.key(['User_V1']);
-						var data = {
+		               	res.locals.user_key = datastore.key(['User_V1']);
+						res.locals.user_data = {
 							bid : {},
 							wishlist : [],
 							access : {},
@@ -83,64 +82,61 @@ router.route('/')
 							password_hash : password_hash,
 							notification : req.body.notification
 						};
-
-						// create user entity
-						datastore.save({
-						  	key: key,
-							excludeFromIndexes: ["phone", "password_hash"],
-							data: data
-						}, function(err) {
-			  				if (!err) {
-			  					try {
-				            		// generate activation token
-				            		var token = jwt.sign({
-										data: {
-											id : key.id,
-											email : req.body.email,
-											type : 'activation'
-										}
-									}, secret.token_secret, { expiresIn: '1h' });
-
-				            		var activation_link = 'https://ms3-web.firebaseapp.com/#/account/activate?token=' + token;
-			            			var mailOptions = {
-									  from: 'ms3.cs506@gmail.com',
-									  to: req.body.email,
-									  subject: 'MS3 Activation Link',
-									  text: 'Thank you for signing up with UW-Madison Students and Scholars Sublease. Please click the following link to activate your account. ' + activation_link + ' The activation link will expire in 1 hour.'
-									};
-
-									transporter.sendMail(mailOptions, function(err, info){
-									  	if (err) {
-									    	console.error(err);
-									    	res.status(500);
-											res.json({ message: 'Internal Server Error' });
-									  	} else {
-									  		console.log(info);
-									    	res.status(201);
-						    				res.json({ message: "Created" });
-									  	}
-									});
-
-			            		} catch(err){
-			            			console.log(err);
-			            			res.status(500);
-									res.json({ message: "Internal Server Error" });
-			            		}
-
-				 			} else {
-								res.status(500);
-								res.json({ message: "Error" });
-							}
-						});
-		            }
-		        });
-
-			} catch (err){
-				if (err.message !== 'Invalid Syntax') {
+						next();
+					} catch (err) {
+						console.error(err);
 						res.status(500);
 						res.json({ message: "Internal Server Error" });
+					}
 				}
 			}
+		});
+	}, function(req, res, next) {
+		datastore.save({
+		  	key: res.locals.user_key,
+			excludeFromIndexes: ["phone", "password_hash"],
+			data: res.locals.user_data
+		}, function(err) {
+			if (!err) {
+				try {
+            		var token = jwt.sign({
+						data: {
+							id : res.locals.user_key.id,
+							email : req.body.email,
+							type : 'activation'
+						}
+					}, secret.token_secret, { expiresIn: '1h' });
+
+            		var activation_link = 'https://ms3-web.firebaseapp.com/#/account/activate?token=' + token;
+        			var mailOptions = {
+					  from: 'ms3.cs506@gmail.com',
+					  to: req.body.email,
+					  subject: 'MS3 Activation Link',
+					  text: 'Thank you for signing up with UW-Madison Students and Scholars Sublease. Please click the following link to activate your account. ' + activation_link + ' The activation link will expire in 1 hour.'
+					};
+
+					transporter.sendMail(mailOptions, function(err, info){
+					  	if (err) {
+					    	console.error(err);
+					    	res.status(500);
+							res.json({ message: 'Internal Server Error' });
+					  	} else {
+					    	res.status(201);
+		    				res.json({ message: "Created" });
+					  	}
+					});
+
+        		} catch(err){
+        			console.log(err);
+        			res.status(500);
+					res.json({ message: "Internal Server Error" });
+        		}
+ 			} else {
+ 				console.error(err);
+				res.status(500);
+				res.json({ message: "Internal Server Error" });
+			}
+		});
 	});
 
 router.route('/:id/activate')

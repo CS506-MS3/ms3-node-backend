@@ -34,7 +34,7 @@ router.route('/')
 					res.status(500);
 					res.json({ message: "Internal Server Error" });
 				} else {
-					if (entities.length == 0) {
+					if (entities.length === 0) {
 			            res.status(401);
 			            res.json({ message: "Invalid Email/Password Combo" });
 			        } else {
@@ -116,7 +116,7 @@ router.route('/')
 					console.error(err);
 					res.status(204).send();
 				} else {
-					if (entities.length == 0) {
+					if (entities.length === 0) {
 		                res.locals.token_key = datastore.key(['Token_Blacklist_V1']);
 						res.locals.token_data = {
 							token : res.locals.token,

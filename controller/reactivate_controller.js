@@ -90,7 +90,6 @@ router.route('/')
 			    	res.status(500);
 					res.json({ message: 'Internal Server Error' });
 			  	} else {
-			  		console.log(info);
 			    	res.status(200);
     				res.json({ message: "Activation Email Sent" });
 			  	}
