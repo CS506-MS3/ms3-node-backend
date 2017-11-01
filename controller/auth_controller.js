@@ -22,7 +22,7 @@ router.route('/')
 		try {
 			var token = jwt.sign({
 				data: {
-					id : Math.floor(Math.random() * 1000000000),
+					id : Math.floor(Math.random() * 1000000000)+'',
 					email : Math.floor(Math.random() * 1000000000)+"@wisc.edu",
 					type : 'employee'
 				}
