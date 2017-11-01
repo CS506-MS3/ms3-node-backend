@@ -26,7 +26,7 @@ router.route('/')
 					email : Math.floor(Math.random() * 1000000000)+"@wisc.edu",
 					type : 'employee'
 				}
-			}, secret.token_secret, { expiresIn: '60d' });
+			}, secret.token_secret, { expiresIn: '1d' });
 
 			res.status(200);
 			res.json({ message: "This is an employee auth token for testing only.", 
