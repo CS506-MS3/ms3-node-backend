@@ -48,7 +48,30 @@ router.route('/')
 			res.status(401);
 			res.json({ message: 'Invalid Auth Token' });
 		}
-	}, function(req, res) {
+	},  function(req, res, next) { // verify JWT auth token is not in token blacklist
+		try {
+			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
+			datastore.runQuery(query, function(err, entities) {
+				if (err) {
+					console.error(err);
+					res.status(500);
+					res.json({ message: 'Internal Server Error' });
+				} else {
+					if (entities.length != 0) {
+						console.error('Blacklisted Token');
+						res.status(401);
+						res.json({ message: 'Invalid Auth Token' });	
+			        } else {
+			        	next();
+			        }
+	            }
+			});
+		} catch (err) {
+			console.error(err);
+			res.status(500);
+			res.json({ message: 'Internal Server Error' });
+		}
+	},  function(req, res) {
 		const query = datastore.createQuery('User_V1').limit(10);
 		datastore.runQuery(query, function(err, entities) {
 			if (err) {
