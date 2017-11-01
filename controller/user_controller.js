@@ -27,21 +27,40 @@ router.use(function timeLog (req, res, next) {
 
 // controller for /api/users
 router.route('/')
-	//  GET /api/users
-	// .get(function(req, res) {
-	// 	// TODO Employee Auth
-	// 	try {
-	// 				var token = req.get('token')
-	// 				var decoded = jwt.verify(token, secret.token_secret);
-	// 	} catch (err) {
-	// 				console.log("Invalid Token");
-	// 	}
-		
-	// 	const query = datastore.createQuery('User_V1');
-	// 	datastore.runQuery(query, function(err, entities) {
 
-	// 	});
- // 	})
+	.get(function(req, res, next) {
+		try {
+			var token = req.get('token');
+			var decoded = jwt.verify(token, secret.token_secret);
+			if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
+				throw new Error('Missing JWT Payload Property');
+			} else {
+				if (decoded.data.type !== 'employee') {
+					throw new Error('Employee Only');
+				} else {
+					res.locals.decoded = decoded;
+					res.locals.token = token;
+					next();
+				}
+			}
+		} catch (err) {
+			console.error(err);
+			res.status(401);
+			res.json({ message: 'Invalid Auth Token' });
+		}
+	}, function(req, res) {
+		const query = datastore.createQuery('User_V1').limit(10);
+		datastore.runQuery(query, function(err, entities) {
+			if (err) {
+				console.error(err);
+				res.status(500);
+				res.json({ message: "Internal Server Error" });
+			} else {
+				res.status(200);
+				res.json(entities);
+			}
+		});
+ 	})
 
 	// POST	/api/users
 	.post(function(req, res, next) { // verify request body
@@ -91,7 +110,7 @@ router.route('/')
 				}
 			}
 		});
-	}, function(req, res, next) {
+	}, function(req, res, next) { // create user entity and send email with activation token
 		datastore.save({
 		  	key: res.locals.user_key,
 			excludeFromIndexes: ["phone", "password_hash"],
