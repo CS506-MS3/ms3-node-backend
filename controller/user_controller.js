@@ -157,6 +157,7 @@ router.route('/:id/activate')
 						throw new Error('Employee Only');
 					} else {
 						res.locals.decoded = decoded;
+						res.locals.token = token;
 						next();
 					}
 				} else {
@@ -170,7 +171,7 @@ router.route('/:id/activate')
 		}
 	}, function(req, res, next) { // verify JWT auth token is not in token blacklist
 		try {
-			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', req.query.token);
+			const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
 			datastore.runQuery(query, function(err, entities) {
 				if (err) {
 					console.error(err);
