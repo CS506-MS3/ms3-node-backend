@@ -101,7 +101,7 @@ router.route('/')
 										}
 									}, secret.token_secret, { expiresIn: '1h' });
 
-				            		var activation_link = 'https://ms3-web.firebaseapp.com/account/activate?token=' + token;
+				            		var activation_link = 'https://ms3-web.firebaseapp.com/#/account/activate?token=' + token;
 			            			var mailOptions = {
 									  from: 'ms3.cs506@gmail.com',
 									  to: req.body.email,
