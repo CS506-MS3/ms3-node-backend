@@ -207,7 +207,7 @@ router.route('/:id/activate')
 			  		res.status(404);
 			  		res.json({ message: 'User Resource Does Not Exist' });
 			  	} else {
-			  		if (entity.email === decoded.data.email) {
+			  		if (entity.email === res.locals.decoded.data.email) {
 			  			console.error('Employee Only');
 			  			res.status(401);
 						res.json({ message: 'Invalid Auth Token' });
