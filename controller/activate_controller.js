@@ -24,8 +24,8 @@ router.route('/')
 			var decoded = jwt.verify(token, secret.token_secret);
 			if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
 				throw new Error('Missing JWT Payload Property');
-			} else if (token === undefined && decoded.data.type !== 'employee') { // TODO add verification for super admin - Iteration 2
-				throw new Error('Employee Only');
+			} else if (decoded.data.type !== 'activation') {
+				throw new Error('Invalid Token Type');
 			} else {
 				res.locals.decoded = decoded;
 				next();
@@ -58,7 +58,7 @@ router.route('/')
 			res.status(500);
 			res.json({ message: 'Internal Server Error' });
 		}
-	}, function(req, res, next){  // verify user entity exists and inactive
+	}, function(req, res, next){ // verify user entity exists and inactive
 		var key = {
 			kind: 'User_V1',
 			id: res.locals.decoded.data.id
@@ -91,7 +91,7 @@ router.route('/')
 			  	}
 			}
 		});
-	}, function(req, res) {
+	}, function(req, res) { // update user entity and return summarized user info
 		res.locals.user_data.active = true;
 		datastore.save({
 			key: res.locals.user_key,
