@@ -18,7 +18,7 @@ router.use(function timeLog (req, res, next) {
 
 router.route('/')
 	
-	.get(function(req, res){
+	.get(function(req, res){ // generate employee token for testing only
 		try {
 			var token = jwt.sign({
 				data: {
