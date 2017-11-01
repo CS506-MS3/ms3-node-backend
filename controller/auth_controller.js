@@ -17,6 +17,26 @@ router.use(function timeLog (req, res, next) {
 });
 
 router.route('/')
+	
+	.get(function(req, res){
+		try {
+			var token = jwt.sign({
+				data: {
+					id : Math.floor(Math.random() * 1000000000),
+					email : Math.floor(Math.random() * 1000000000)+"@wisc.edu",
+					type : 'employee'
+				}
+			}, secret.token_secret, { expiresIn: '60d' });
+
+			res.status(200);
+			res.json({ message: "This is an employee auth token for testing only.", 
+					   token: token });
+		} catch (err) {
+			console.error(err);
+	    	res.status(500);
+			res.json({ message: 'Internal Server Error' });
+		}
+	})
 
 	.post(function(req, res, next){ // verify request body
 		if (req.body.email === undefined || req.body.password === undefined) {
