@@ -15,6 +15,7 @@ $ (sudo) npm install
 Ask Backend Team for secret.json file.
 Put secret.json file under /secret/secret.json
 
+```
 - app.js
 - controller
   |-user_controller.js
@@ -33,7 +34,7 @@ Put secret.json file under /secret/secret.json
 - Testing MS3 Backend.postman_collection.json
 - package-lock.json
 - package.json
-
+```
 
 ## Build Server
 
