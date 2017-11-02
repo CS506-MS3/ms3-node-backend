@@ -65,4 +65,4 @@ Please test APIs using https://www.madisons3.com/api/
 
 Download Postman (https://www.getpostman.com/) , then import test collection using file Testing MS3 Backend.postman_collection.json, each test in the collection has included correct api URL, Http Method, and sample request.
 
-For more details, please go to Repository Wiki page
+For more details, please go to Repository Wiki page (https://github.com/CS506-MS3/ms3-node-backend/wiki)
