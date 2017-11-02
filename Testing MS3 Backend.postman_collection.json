@@ -1,0 +1,251 @@
+{
+	"info": {
+		"name": "Testing MS3 Backend",
+		"_postman_id": "513f85a6-ba11-e93c-dbfe-0cfacfa5f3bd",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User Story 1 - Test Sign Up",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"email\": \"Your-NetID@wisc.edu\",\n\t\"password\": \"Your Password\",\n\t\"notification\": {\n\t\t\"marketing\": true\n\t},\n\t\"phone\": 1233456\n}"
+				},
+				"url": {
+					"raw": "http://www.madisons3.com/api/users",
+					"protocol": "http",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				},
+				"description": "POST /api/users"
+			},
+			"response": []
+		},
+		{
+			"name": "User Story 4 - Test Sign In",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"email\": \"Your-NetID@wisc.edu\",\n\t\"password\": \"Your Password\"\n}"
+				},
+				"url": {
+					"raw": "http://www.madisons3.com/api/auth",
+					"protocol": "http",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"auth"
+					]
+				},
+				"description": "POST /api/auth"
+			},
+			"response": []
+		},
+		{
+			"name": "User Story 2 - Test Activation",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://www.madisons3.com/api/activate?token=Your_Auth_Token_In_Email",
+					"protocol": "http",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"activate"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "Your_Auth_Token_In_Email",
+							"equals": true
+						}
+					]
+				},
+				"description": "GET /api/activate?token=${token}"
+			},
+			"response": []
+		},
+		{
+			"name": "User Story 6 - Test User Deactivate Self, Employee Deactivate User",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "token",
+						"value": "Your_Auth_Token / Employee_Auth_Token"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"password\": \"Your Password If Using User Auth Token, Empty Request Body If Using Employee Auth Token\"\n}"
+				},
+				"url": {
+					"raw": "http://www.madisons3.com/api/users/Your_User_Id/deactivate",
+					"protocol": "http",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						"Your_User_Id",
+						"deactivate"
+					]
+				},
+				"description": "PUT /api/users/:id/deactivate"
+			},
+			"response": []
+		},
+		{
+			"name": "Other - Test Employee Activate User",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"value": "Employee_Auth_Token"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "http://www.madisons3.com/api/users/Your_User_Id/activate",
+					"protocol": "http",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						"Your_User_Id",
+						"activate"
+					]
+				},
+				"description": "GET /api/users/:id/activate"
+			},
+			"response": []
+		},
+		{
+			"name": "Other - Get Employee Token For Testing",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://www.madisons3.com/api/auth",
+					"protocol": "http",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"auth"
+					]
+				},
+				"description": "GET /api/auth"
+			},
+			"response": []
+		},
+		{
+			"name": "User Story 5 - Test Sign Out",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "token",
+						"value": "Your_Auth_Token"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "http://www.madisons3.com/api/auth",
+					"protocol": "http",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"auth"
+					]
+				},
+				"description": "DELETE /api/auth"
+			},
+			"response": []
+		},
+		{
+			"name": "User Story 3 - Test Request New Activation Link",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"email\" : \"Your-NetID@wisc.edu\"\n}"
+				},
+				"url": {
+					"raw": "http://www.madisons3.com/api/reactivate",
+					"protocol": "http",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"reactivate"
+					]
+				},
+				"description": "POST /api/reactivate"
+			},
+			"response": []
+		}
+	]
+}
