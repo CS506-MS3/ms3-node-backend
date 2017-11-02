@@ -38,7 +38,9 @@ Put secret.json file under /secret/secret.json
 
 ## Run Server
 
-> .node_modules/pm2/bin/pm2 start app.js
+```
+$ .node_modules/pm2/bin/pm2 start app.js
+```
 
 ## Testing
 
