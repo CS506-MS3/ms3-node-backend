@@ -4,10 +4,10 @@ https://www.madisons3.com/api/
 
 (Local) http://localhost:3000
 
-## Set-up
+## Set up
 Requires Newest Version of Node
 
-Setup
+Set up
 ```
 $ (sudo) npm install
 ```
@@ -36,10 +36,10 @@ Put secret.json file under /secret/secret.json
 - package.json
 ```
 
-## Build Server
+## Run Server
 
-.node_modules/pm2/bin/pm2 start app.js
+> .node_modules/pm2/bin/pm2 start app.js
 
 ## Testing
 
-Download Postman, then import test collection using file Testing MS3 Backend.postman_collection.json
+Download Postman (https://www.getpostman.com/) , then import test collection using file Testing MS3 Backend.postman_collection.json
