@@ -6,15 +6,17 @@ https://www.madisons3.com/api/
 
 ## Progress
 
+```
 Completed: 
-  (User Story 1) Sign-up
-  (User Story 2) Activate Account
-  (User Story 3) Request Activation
-  (User Story 4) Sign-in
-  (User Story 5) Sign-out
-  (User Story 6) Deactivate Account
-  (Other) Employee Activate User
-  (Other) Get Employee Token For Testing
+  (User Story 1) Sign-up                        POST /api/users
+  (User Story 2) Activate Account               GET /api/activate?token=${token}
+  (User Story 3) Request Activation             POST /api/reactivate
+  (User Story 4) Sign-in                        POST /api/auth
+  (User Story 5) Sign-out                       DELETE /api/auth
+  (User Story 6) Deactivate Account             PUT /api/users/:id/deactivate
+  (Other) Employee Activate User                GET /api/users/:id/activate
+  (Other) Get Employee Token For Testing        GET /api/auth
+```
   
 
 ## Set up
