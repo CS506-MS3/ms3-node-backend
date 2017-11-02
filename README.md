@@ -61,7 +61,7 @@ $ .node_modules/pm2/bin/pm2 start app.js
 
 ## Testing
 
-Please test APIs using https://www.madisons3.com/api/
+Please test APIs using Postman.
 
 Download Postman (https://www.getpostman.com/) , then import test collection using file Testing MS3 Backend.postman_collection.json, each test in the collection has included correct api URL, Http Method, and sample request.
 
