@@ -33,7 +33,7 @@ router.route('/')
 		} catch (err) {
 			console.error(err);
 			res.status(401);
-			res.json({ message: 'Invalid Auth Token' });
+			res.json({ message: 'Invalid Activation Token' });
 		}
 	}, function(req, res, next){ // verify JWT auth token is not in token blacklist
 		try {
@@ -47,7 +47,7 @@ router.route('/')
 					if (entities.length != 0) {
 						console.error('Blacklisted Token');
 						res.status(401);
-						res.json({ message: 'Invalid Auth Token' });	
+						res.json({ message: 'Invalid Activation Token' });	
 			        } else {
 			        	next();
 			        }
