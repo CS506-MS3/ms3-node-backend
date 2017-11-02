@@ -15,24 +15,24 @@ $ (sudo) npm install
 Ask Backend Team for secret.json file.
 Put secret.json file under /secret/secret.json
 
--app.js
--controller
- |-user_controller.js
- |-activate_controller.js
- |-reactivate_controller.js
- |-auth_controller.js
- |-...
--node_modules
- |-...
--script
- |-...
--test
- |-...
--secret
- |-secret.json
--Testing MS3 Backend.postman_collection.json
--package-lock.json
--package.json
+-app.js\s\s
+-controller\s\s
+ |-user_controller.js\s\s
+ |-activate_controller.js\s\s
+ |-reactivate_controller.js\s\s
+ |-auth_controller.js\s\s
+ |-...\s\s
+-node_modules\s\s
+ |-...\s\s
+-script\s\s
+ |-...\s\s
+-test\s\s
+ |-...\s\s
+-secret\s\s
+ |-secret.json\s\s
+-Testing MS3 Backend.postman_collection.json\s\s
+-package-lock.json\s\s
+-package.json\s\s
 
 
 ## Build Server
