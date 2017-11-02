@@ -53,13 +53,13 @@ Put secret.json file under /secret/secret.json
 
 ## Run Server
 
+#Note: It is not recommended to run the server locally, since Google Datastore requires credentials and Gmail Authentication may fail when running locally.
+
 ```
 $ .node_modules/pm2/bin/pm2 start app.js
 ```
 
 ## Testing
-
-Note: It is not recommended to run the server locally, since Google Datastore requires credentials and Gmail Authentication may fail when running locally.
 
 Please test APIs using https://www.madisons3.com/api/
 
