@@ -1,4 +1,5 @@
 const utilsSpec = require('./utils.spec');
+const permissionsSpec = require('./permissions.spec');
 
 module.exports = (function () {
     'use strict';
@@ -6,6 +7,7 @@ module.exports = (function () {
     function runSuite() {
         describe('Core Module Tests:', function () {
            utilsSpec.run();
+           permissionsSpec.run();
         });
     }
 
