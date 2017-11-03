@@ -16,3 +16,4 @@ node_modules
 
 secret/secret.json
 .DS_Store
+.idea
