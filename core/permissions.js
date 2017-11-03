@@ -1,0 +1,74 @@
+const utils = require('./utils');
+
+module.exports = (function () {
+    'use strict';
+
+    const ROLES = {
+        USER: 'user',
+        EMPLOYEE: 'employee',
+        SUPER_ADMIN: 'superadmin'
+    };
+
+    function getRoleGuard(roles) {
+
+        return runRoleCheckMiddleware.bind(undefined, roles);
+    }
+
+    function runRoleCheckMiddleware(roles, req, res, next) {
+        try {
+            utils.throwIfFalse(isTokenDecoded(res), 'Token not extracted at previous step');
+
+            const data = res.locals.decoded.data;
+            utils.throwIfFalse(hasRole(roles, data), 'Invalid Permissions');
+
+            next();
+        } catch (err) {
+            console.error(err);
+            res.status(403).json({message: 'Invalid Permissions'});
+        }
+    }
+
+    function isTokenDecoded(res) {
+
+        return res.locals.decoded;
+    }
+
+    function hasRole(roles, data) {
+
+        return roles.includes(data.type);
+    }
+
+    function getOwnerGuard(paramKey, roles) {
+
+        return runOwnerCheckMiddleware.bind(undefined, paramKey, roles);
+    }
+
+    function runOwnerCheckMiddleware(paramKey, roles, req, res, next) {
+        try {
+            utils.throwIfFalse(isTokenDecoded(res), 'Token not extracted at previous step');
+
+            const data = res.locals.decoded.data;
+            if (hasRole(roles, data)) {
+                utils.throwIfFalse(checkOwnershipParam(paramKey, data, req), 'Not an owner');
+                next();
+            } else {
+                next();
+            }
+        } catch (err) {
+            console.log(err);
+            res.status(403).json({message: 'Invalid Permissions'});
+        }
+    }
+
+    function checkOwnershipParam(paramKey, data, req) {
+
+        return data[paramKey] && req.params[paramKey] &&
+            data[paramKey] === req.params[paramKey];
+    }
+
+    return {
+        ROLES: ROLES,
+        getRoleGuard: getRoleGuard,
+        getOwnerGuard: getOwnerGuard
+    };
+})();
