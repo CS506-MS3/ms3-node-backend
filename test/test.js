@@ -1,6 +1,12 @@
 var supertest = require('supertest')
-var should = require('should')
 var server  = supertest.agent('http://localhost:3000')
+const chai = require('chai');
+const sinon = require('sinon');
+const should = require('should');
+const sinonChai = require('sinon-chai');
+
+chai.should();
+chai.use(sinonChai);
 
 const coreTests = require('./core/core.suite');
 
