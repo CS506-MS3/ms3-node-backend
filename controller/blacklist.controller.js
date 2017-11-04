@@ -7,7 +7,7 @@ const Datastore = require('@google-cloud/datastore');
 const datastore = Datastore();
 
 const auth = require('../core/auth')(datastore);
-const employee = require('../core/employees')(datastore);
+const blacklist = require('../middlewares/blacklist.middleware')(datastore);
 
 router.use(bodyParser.urlencoded({extended: true}));
 router.use(bodyParser.json());
@@ -18,6 +18,14 @@ router.use(function timeLog(req, res, next) {
 });
 
 router.route('/')
+    .post(
+        auth.checkAuth,
+        permissions.getRoleGuard([
+            permissions.ROLES.EMPLOYEE, permissions.ROLES.SUPER_ADMIN
+        ]),
+        blacklist.checkDuplicate,
+        blacklist.add
+    )
     .get(
         auth.checkAuth,
         permissions.getRoleGuard([
