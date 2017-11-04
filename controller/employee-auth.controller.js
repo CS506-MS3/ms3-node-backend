@@ -29,3 +29,5 @@ router.route('/')
         auth.checkInactiveToken,
         auth.deactivateToken
     );
+
+module.exports = router;
