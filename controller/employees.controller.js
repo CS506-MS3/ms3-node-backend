@@ -24,4 +24,11 @@ router.route('/')
         employee.checkForm,
         employee.checkDuplicate,
         employee.saveEmployee
+    )
+    .get(
+        auth.checkAuth,
+        permissions.getRoleGuard([
+            permissions.ROLES.EMPLOYEE, permissions.ROLES.SUPER_ADMIN
+        ]),
+        employee.getList
     );

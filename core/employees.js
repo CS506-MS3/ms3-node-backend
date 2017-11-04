@@ -2,6 +2,8 @@ const errorResponse = require('../core/error-response');
 const secret = require('../secret/secret.json');
 const crypto = require('crypto');
 
+const permissions = require('./permissions');
+
 module.exports = function (datastore) {
     'use strict';
 
@@ -13,7 +15,8 @@ module.exports = function (datastore) {
         checkStatus: checkStatus,
         checkForm: checkForm,
         checkDuplicate: checkDuplicate,
-        saveEmployee: saveEmployee
+        saveEmployee: saveEmployee,
+        getList: getList
     };
 
     function get(req, res, next) {
@@ -121,6 +124,24 @@ module.exports = function (datastore) {
         }, function (error) {
 
             errorResponse(res, 500, 'Internal Server Error', error);
+        });
+    }
+
+    function getList(req, res) {
+        const query = datastore.createQuery(ENTITY_KEY).filter('role', '!=', permissions.ROLES.EMPLOYEE);
+
+        datastore.runQuery(query, function (error, entities) {
+            if (error) {
+
+                errorResponse.send(res, 500, 'Internal Server Error', error);
+            } else if (entities.length === 0) {
+
+                res.status(200).json([]);
+            } else {
+
+                // Skip pagination for now.
+                res.status(200).json(entities);
+            }
         });
     }
 };
