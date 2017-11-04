@@ -1,4 +1,7 @@
 const errorResponse = require('../core/error-response');
+const secret = require('../secret/secret.json');
+const crypto = require('crypto');
+
 
 function usersMiddleware(datastore) {
     'use strict';
@@ -17,8 +20,7 @@ function usersMiddleware(datastore) {
         activate: activate,
         deactivate: deactivate,
         checkPassword: checkPassword,
-        checkEmail: checkEmail,
-
+        checkEmail: checkEmail
     };
 
     function getList(req, res) {
