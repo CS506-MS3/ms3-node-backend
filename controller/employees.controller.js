@@ -1,44 +1,43 @@
-const express = require('express');
-const router = express.Router();
-const bodyParser = require('body-parser');
-const permissions = require('../core/permissions');
+function employeesController(
+    express, bodyParser, permissions, auth, employees, CONFIG
+) {
+    'use strict';
 
-const Datastore = require('@google-cloud/datastore');
-const datastore = Datastore();
+    const router = express.Router();
 
-const auth = require('../core/auth')(datastore);
-const employee = require('../core/employees')(datastore);
+    router.use(bodyParser.urlencoded({extended: true}));
+    router.use(bodyParser.json());
 
-router.use(bodyParser.urlencoded({extended: true}));
-router.use(bodyParser.json());
+    router.use(function timeLog(req, res, next) {
+        console.log('In Employee Controller @ Time: ', Date.now());
+        next();
+    });
 
-router.use(function timeLog(req, res, next) {
-    console.log('In Employee Controller @ Time: ', Date.now());
-    next();
-});
+    router.route('/')
+        .post(
+            auth.checkAuth,
+            permissions.getRoleGuard([CONFIG.ROLES.SUPER_ADMIN]),
+            employees.checkForm,
+            employees.checkDuplicate,
+            employees.saveEmployee
+        )
+        .get(
+            auth.checkAuth,
+            permissions.getRoleGuard([
+                CONFIG.ROLES.EMPLOYEE, CONFIG.ROLES.SUPER_ADMIN
+            ]),
+            employees.getList
+        );
 
-router.route('/')
-    .post(
-        auth.checkAuth,
-        permissions.getRoleGuard([permissions.ROLES.SUPER_ADMIN]),
-        employee.checkForm,
-        employee.checkDuplicate,
-        employee.saveEmployee
-    )
-    .get(
-        auth.checkAuth,
-        permissions.getRoleGuard([
-            permissions.ROLES.EMPLOYEE, permissions.ROLES.SUPER_ADMIN
-        ]),
-        employee.getList
-    );
+    router.route('/:id')
+        .delete(
+            auth.checkAuth,
+            permissions.getRoleGuard([CONFIG.ROLES.SUPER_ADMIN]),
+            employees.getByKey,
+            employees.remove
+        );
 
-router.route('/:id')
-    .delete(
-        auth.checkAuth,
-        permissions.getRoleGuard([permissions.ROLES.SUPER_ADMIN]),
-        employee.getByKey,
-        employee.remove
-    );
+    return router;
+}
 
-module.exports = router;
+module.exports = employeesController;
