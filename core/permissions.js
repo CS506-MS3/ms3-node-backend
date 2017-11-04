@@ -66,9 +66,26 @@ module.exports = (function () {
             data[paramKey] === req.params[paramKey];
     }
 
+    function runIf(roles, middleware) {
+        const data = res.locals.decoded.data;
+
+        if (hasRole(roles, data)) {
+
+            return middleware;
+        } else {
+
+            return skipMiddleware;
+        }
+    }
+
+    function skipMiddleware(req, res, next) {
+        next();
+    }
+
     return {
         ROLES: ROLES,
         getRoleGuard: getRoleGuard,
-        getOwnerGuard: getOwnerGuard
+        getOwnerGuard: getOwnerGuard,
+        runIf: runIf
     };
 })();

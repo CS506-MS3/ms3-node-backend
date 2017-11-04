@@ -145,143 +145,30 @@ router.route('/:id/activate')
             permissions.ROLES.EMPLOYEE,
             permissions.ROLES.SUPER_ADMIN
         ]),
+        users.getUser,
         users.isInactive,
-        users.deactivate
+        users.activate
     );
 
 
 router.route('/:id/deactivate')
 
-    .put(function (req, res, next) { // verify JWT auth token, verify token payload
-        try {
-            var token = req.get('token');
-            var decoded = jwt.verify(token, secret.token_secret);
-            if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
-                throw new Error('Missing JWT Payload Property');
-            } else {
-                if (decoded.data.id !== req.params.id) {
-                    if (decoded.data.type === 'user') {
-                        throw new Error('User Id Mismatch');
-                    } else {
-                        res.locals.token = token;
-                        res.locals.decoded = decoded;
-                        next();
-                    }
-                } else {
-                    res.locals.token = token;
-                    res.locals.decoded = decoded;
-                    next();
-                }
-            }
-        } catch (err) {
-            console.error(err);
-            res.status(401);
-            res.json({message: 'Invalid Auth Token'});
-        }
-    }, function (req, res, next) { // verify user request body
-        if (res.locals.decoded.data.type === 'user') {
-            if (req.body.password === undefined) {
-                res.status(400);
-                res.json({message: 'Malformed Request'});
-            } else {
-                next();
-            }
-        } else {
-            next();
-        }
-    }, function (req, res, next) { // verify JWT auth token is not already blacklisted
-        try {
-            const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
-            datastore.runQuery(query, function (err, entities) {
-                if (err) {
-                    console.error(err);
-                    res.status(500);
-                    res.json({message: 'Internal Server Error'});
-                } else {
-                    if (entities.length != 0) {
-                        console.error('Blacklisted Token');
-                        res.status(401);
-                        res.json({message: 'Invalid Auth Token'});
-                    } else {
-                        next();
-                    }
-                }
-            });
-        } catch (err) {
-            console.error(err);
-            res.status(500);
-            res.json({message: 'Internal Server Error'});
-        }
-    }, function (req, res, next) { // verify user entity exists, active, and password is correct
-        var key = {
-            kind: 'User_V1',
-            id: req.params.id
-        };
-        datastore.get(key, function (err, entity) {
-            if (err) {
-                console.error(err);
-                res.status(500);
-                res.json({message: 'Internal Server Error'});
-            } else {
-                if (entity === undefined) {
-                    res.status(404);
-                    res.json({message: 'User Resource Does Not Exist'});
-                } else {
-                    if (entity.email !== res.locals.decoded.data.email && res.locals.decoded.data.type === 'user') {
-                        console.error('Invalid JWT Payload');
-                        res.status(401);
-                        res.json({message: 'Invalid Auth Token'});
-                    } else if (entity.active === false) {
-                        res.status(409);
-                        res.json({message: 'Account Already Inactive'});
-                    } else {
-                        if (res.locals.decoded.data.type === 'user') {
-                            try {
-                                var password_hash = crypto.createHmac('sha256', secret.password_secret)
-                                    .update(req.body.password)
-                                    .digest('hex');
-                                if (entity.password_hash !== password_hash) {
-                                    throw new Error('Incorrect Password');
-                                } else {
-                                    res.locals.user_data = entity;
-                                    res.locals.user_key = key;
-                                    next();
-                                }
-                            } catch (err) {
-                                if (err.message === 'Incorrect Password') {
-                                    res.status(401);
-                                    res.json({message: "Invalid Email/Password Combo"});
-                                } else {
-                                    console.error('Password Hashing Error');
-                                    res.status(500);
-                                    res.json({message: 'Internal Server Error'});
-                                }
-                            }
-                        } else {
-                            res.locals.user_data = entity;
-                            res.locals.user_key = key;
-                            next();
-                        }
-                    }
-                }
-            }
-        });
-    }, function (req, res) { // update user entity
-        res.locals.user_data.active = false;
-        datastore.save({
-            key: res.locals.user_key,
-            excludeFromIndexes: ["phone", "password_hash"],
-            data: res.locals.user_data
-        }, function (err) {
-            if (!err) {
-                res.status(200);
-                res.json({active: false});
-            } else {
-                console.error('Error Saving New User Entity');
-                res.status(500);
-                res.json({message: 'Internal Server Error'});
-            }
-        });
-    });
+    .put(auth.checkAuth,
+        auth.checkInactiveToken,
+        permissions.getRoleGuard([
+            permissions.ROLES.USER,
+            permissions.ROLES.EMPLOYEE,
+            permissions.ROLES.SUPER_ADMIN
+        ]),
+        users.getUser,
+        permissions.runIf([
+            permissions.ROLES.USER
+        ], users.checkPassword),
+        permissions.runIf([
+            permissions.ROLES.USER
+        ], users.checkEmail),
+        users.isActive,
+        users.deactivate
+    );
 
 module.exports = router;
