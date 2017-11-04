@@ -32,3 +32,11 @@ router.route('/')
         ]),
         employee.getList
     );
+
+router.route('/:id')
+    .delete(
+        auth.checkAuth,
+        permissions.getRoleGuard([permissions.ROLES.SUPER_ADMIN]),
+        employee.getByKey,
+        employee.remove
+    );

@@ -16,7 +16,9 @@ module.exports = function (datastore) {
         checkForm: checkForm,
         checkDuplicate: checkDuplicate,
         saveEmployee: saveEmployee,
-        getList: getList
+        getList: getList,
+        getByKey: getByKey,
+        remove: remove
     };
 
     function get(req, res, next) {
@@ -141,6 +143,30 @@ module.exports = function (datastore) {
 
                 // Skip pagination for now.
                 res.status(200).json(entities);
+            }
+        });
+    }
+
+    function getByKey(req, res, next) {
+        datastore.get([ENTITY_KEY, req.params['id']], function (error, entity) {
+            if (error) {
+
+                errorResponse(res, 404, 'Employee Not Found', error);
+            } else {
+
+                next();
+            }
+        });
+    }
+
+    function remove(req, res) {
+        datastore.remove([ENTITY_KEY, req.params['id']], function (error) {
+            if (error) {
+
+                errorResponse(res, 500, 'Internal Server Error', error);
+            } else {
+
+                res.status(200).send();
             }
         });
     }
