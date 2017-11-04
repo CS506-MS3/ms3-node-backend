@@ -160,15 +160,19 @@ module.exports = function (datastore) {
     }
 
     function remove(req, res) {
-        datastore.remove([ENTITY_KEY, req.params['id']], function (error) {
-            if (error) {
+        const key = datastore.key([ENTITY_KEY, req.params['id']]);
+
+        datastore.delete(key)
+            .then(() => {
+
+                res.status(200).json({
+                    id: key.id
+                });
+            })
+            .catch((error) => {
 
                 errorResponse(res, 500, 'Internal Server Error', error);
-            } else {
-
-                res.status(200).send();
-            }
-        });
+            });
     }
 };
 
