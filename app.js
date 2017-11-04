@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var app = express();
 var router = express.Router();
 
+require('super-admin-creator')();
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
