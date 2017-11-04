@@ -27,6 +27,11 @@ router.use('/reactivate', reactivateController);
 router.use('/activate', activateController);
 
 
+const employeeAuthController = require('./controller/employee-auth.controller');
+
+router.use('/employee-auth', employeeAuthController);
+
+
 // TODO /api/authenticate
 // TODO /api/access
 // TODO /api/employee
