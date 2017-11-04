@@ -6,6 +6,7 @@ module.exports = function (datastore) {
     return {
         add: add,
         getList: getList,
+        remove: remove,
         checkDuplicate: checkDuplicate
     };
 
@@ -47,6 +48,20 @@ module.exports = function (datastore) {
                 res.status(200).json(entities);
             }
         });
+    }
+
+    function remove(req, res) {
+        const key = datastore.key([ENTITY_KEY, req.params['id']]);
+
+        datastore.delete(key)
+            .then(() => {
+
+                res.status(200).json({id: key.id});
+            })
+            .catch((error) => {
+
+                errorResponse.send(res, 500, 'Internal Server Error', error);
+            });
     }
 
     function checkDuplicate(req, res, next) {

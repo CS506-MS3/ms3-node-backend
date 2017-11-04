@@ -40,3 +40,5 @@ router.route('/:id')
         employee.getByKey,
         employee.remove
     );
+
+module.exports = router;

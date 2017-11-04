@@ -33,3 +33,14 @@ router.route('/')
         ]),
         blacklist.getList
     );
+
+router.route('/:id')
+    .delete(
+        auth.checkAuth,
+        permissions.getRoleGuard([
+            permissions.ROLES.EMPLOYEE, permissions.ROLES.SUPER_ADMIN
+        ]),
+        blacklist.remove
+    );
+
+module.exports = router;
