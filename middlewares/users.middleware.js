@@ -1,12 +1,7 @@
-const errorResponse = require('../core/error-response');
-const secret = require('../secret/secret.json');
-const crypto = require('crypto');
-
-
-function usersMiddleware(datastore) {
+function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     'use strict';
 
-    const ENTITY_KEY = 'User_V1';
+    const ENTITY_KEY = CONFIG.ENTITY_KEYS.USERS;
 
     datastore.runQuery(myQuery)
         .then((response) => console.log('response :' + JSON.stringify(response)))
@@ -20,7 +15,10 @@ function usersMiddleware(datastore) {
         activate: activate,
         deactivate: deactivate,
         checkPassword: checkPassword,
-        checkEmail: checkEmail
+        checkEmail: checkEmail,
+        checkCreateForm: checkCreateForm,
+        checkDuplicate: checkDuplicate,
+        createUser: createUser
     };
 
     function getList(req, res) {
@@ -114,7 +112,7 @@ function usersMiddleware(datastore) {
                 errorResponse.send(res, 500, 'Internal Server Error', error);
             });
     }
-    
+
     function checkPassword(req, res, next) {
         if (req.body.password === undefined) {
 
@@ -156,6 +154,73 @@ function usersMiddleware(datastore) {
 
             errorResponse.send(res, 401, 'Invalid Auth Token');
         }
+    }
+
+    function checkCreateForm(req, res, next) {
+        if (req.body.email === undefined || req.body.password === undefined ||
+            req.body.notification === undefined || req.body.notification.marketing === undefined
+        ) {
+
+            errorResponse.send(res, 400, 'Malformed Request');
+        } else {
+
+            next();
+        }
+    }
+
+    function checkDuplicate(req, res, next) {
+        const query = datastore.createQuery(ENTITY_KEY).filter('email', '=', req.body.email);
+        datastore.runQuery(query)
+            .then((entities) => {
+                if (entities.length === 0) {
+
+                    next();
+                } else {
+
+                    errorResponse.send(res, 409, 'Account Already Exists');
+                }
+            })
+            .catch((error) => {
+
+                errorResponse.send(res, 500, 'Internal Server Error', error);
+            });
+    }
+
+    function createUser(req, res, next) {
+        const password = hashPassword(req.body.password);
+
+        const key = datastore.key([ENTITY_KEY]);
+        const entity = {
+            key: key,
+            excludeFromIndexes: ['phone', 'password_hash'],
+            data: {
+                bid: {},
+                wishlist: [],
+                access: {},
+                phone: req.body.phone ? 0 : req.body.phone,
+                listing: [],
+                stripe_id: 0,
+                active: false,
+                email: req.body.email,
+                password_hash: password,
+                notification: req.body.notification
+            }
+        };
+
+        datastore.save(entity)
+            .then(() => {
+                res.locals.activationData = {
+                    id: key.id,
+                    email: req.body.email,
+                    type: 'activation'
+                };
+
+                next();
+            })
+            .catch((error) => {
+
+                errorResponse.send(res, 500, 'Internal Server Error', error);
+            });
     }
 }
 

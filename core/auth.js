@@ -1,15 +1,12 @@
-const secret = require('../secret/secret.json');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-
-const SignInForm = require('./sign-in-form');
-const errorResponse = require('../core/error-response');
-
-module.exports = function (datastore) {
+function authMiddleware(
+    datastore, errorResponse, secret, jwt, CONFIG
+) {
     'use strict';
 
-    const TOKEN_EXPIRY = '14d';
-    const ENTITY_KEY = 'Token_Blacklist_V1';
+    const SignInForm = require('./sign-in-form');
+
+    const TOKEN_EXPIRY = CONFIG.TOKEN_CONFIG.DEFAULT_EXPIRY;
+    const ENTITY_KEY = CONFIG.ENTITY_KEYS.TOKEN_BLACKLIST;
 
     return {
         validateForm: validateForm,
@@ -115,4 +112,6 @@ module.exports = function (datastore) {
 
         res.status(204).send();
     }
-};
+}
+
+module.exports = authMiddleware;

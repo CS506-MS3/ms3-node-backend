@@ -1,7 +1,9 @@
-module.exports = function (datastore) {
+function blacklistMiddleware(
+    datastore, errorResponse, CONFIG
+) {
     'use strict';
 
-    const ENTITY_KEY = 'Email_Blacklist_Dev';
+    const ENTITY_KEY = CONFIG.ENTITY_KEYS.EMAIL_BLACKLIST;
 
     return {
         add: add,
@@ -81,4 +83,6 @@ module.exports = function (datastore) {
             }
         });
     }
-};
+}
+
+module.exports = blacklistMiddleware;

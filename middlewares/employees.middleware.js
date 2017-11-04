@@ -1,13 +1,9 @@
-const errorResponse = require('../core/error-response');
-const secret = require('../secret/secret.json');
-const crypto = require('crypto');
-
-const permissions = require('./permissions');
-
-module.exports = function (datastore) {
+function employeesMiddleware(
+    datastore, errorResponse, secret, crypto, CONFIG
+) {
     'use strict';
 
-    const ENTITY_KEY = 'Employee_Dev';
+    const ENTITY_KEY = CONFIG.ENTITY_KEYS.EMPLOYEES;
 
     return {
         get: get,
@@ -118,7 +114,7 @@ module.exports = function (datastore) {
                 email: req.body.email,
                 phone: '',
                 active: true,
-                role: permissions.ROLES.EMPLOYEE,
+                role: CONFIG.ROLES.EMPLOYEE,
                 password_hash: crypto.createHmac('sha256', secret.password_secret)
                     .update(req.body.password)
                     .digest('hex')
@@ -174,5 +170,6 @@ module.exports = function (datastore) {
                 errorResponse(res, 500, 'Internal Server Error', error);
             });
     }
-};
+}
 
+module.exports = employeesMiddleware;
