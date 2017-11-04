@@ -1,6 +1,8 @@
 const secret = require('../secret/secret.json');
 const crypto = require('crypto');
 
+const permissions = require('../core/permissions');
+
 const Datastore = require('@google-cloud/datastore');
 const datastore = Datastore();
 
@@ -37,12 +39,12 @@ module.exports = (function () {
 
                 datastore.save({
                     key: datastore.key([ENTITY_KEY]),
-                    excludeFromIndexes: ['password_hash'],
+                    excludeFromIndexes: ['phone', 'password_hash'],
                     data: {
                         email: email,
                         phone: '',
                         active: true,
-                        role: 'superadmin',
+                        role: permissions.ROLES.SUPER_ADMIN,
                         password_hash: crypto.createHmac('sha256', secret.password_secret)
                             .update(password)
                             .digest('hex')
