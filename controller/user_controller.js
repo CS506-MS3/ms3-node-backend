@@ -138,101 +138,16 @@ router.route('/')
     });
 
 router.route('/:id/activate')
-
-    .get(function (req, res, next) { // verify JWT auth token, verify token payload
-        try {
-            var token = req.get('token');
-            var decoded = jwt.verify(token, secret.token_secret);
-            if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
-                throw new Error('Missing JWT Payload Property');
-            } else {
-                if (decoded.data.id !== req.params.id) {
-                    if (decoded.data.type !== 'employee') {
-                        throw new Error('Employee Only');
-                    } else {
-                        res.locals.decoded = decoded;
-                        res.locals.token = token;
-                        next();
-                    }
-                } else {
-                    throw new Error('Employee Only');
-                }
-            }
-        } catch (err) {
-            console.error(err);
-            res.status(401);
-            res.json({message: 'Invalid Auth Token'});
-        }
-    }, function (req, res, next) { // verify JWT auth token is not in token blacklist
-        try {
-            const query = datastore.createQuery('Token_Blacklist_V1').filter('token', '=', res.locals.token);
-            datastore.runQuery(query, function (err, entities) {
-                if (err) {
-                    console.error(err);
-                    res.status(500);
-                    res.json({message: 'Internal Server Error'});
-                } else {
-                    if (entities.length != 0) {
-                        console.error('Blacklisted Token');
-                        res.status(401);
-                        res.json({message: 'Invalid Auth Token'});
-                    } else {
-                        next();
-                    }
-                }
-            });
-        } catch (err) {
-            console.error(err);
-            res.status(500);
-            res.json({message: 'Internal Server Error'});
-        }
-    }, function (req, res, next) { // verify user entity exists and inactive
-        var key = {
-            kind: 'User_V1',
-            id: req.params.id
-        };
-        datastore.get(key, function (err, entity) {
-            if (err) {
-                console.error(err);
-                res.status(500);
-                res.json({message: 'Internal Server Error'});
-            } else {
-                if (entity === undefined) {
-                    res.status(404);
-                    res.json({message: 'User Resource Does Not Exist'});
-                } else {
-                    if (entity.email === res.locals.decoded.data.email) {
-                        console.error('Employee Only');
-                        res.status(401);
-                        res.json({message: 'Invalid Auth Token'});
-                    } else if (entity.active === true) {
-                        res.status(409);
-                        res.json({message: 'Account Already Active'});
-                    } else {
-                        res.locals.user_data = entity;
-                        res.locals.user_key = key;
-                        next();
-                    }
-                }
-            }
-        });
-    }, function (req, res) { // update user entity
-        res.locals.user_data.active = true;
-        datastore.save({
-            key: res.locals.user_key,
-            excludeFromIndexes: ["phone", "password_hash"],
-            data: res.locals.user_data
-        }, function (err) {
-            if (!err) {
-                res.status(200);
-                res.json({active: true});
-            } else {
-                console.error(err);
-                res.status(500);
-                res.json({message: 'Internal Server Error'});
-            }
-        });
-    });
+    .get(
+        auth.checkAuth,
+        auth.checkInactiveToken,
+        permissions.getRoleGuard([
+            permissions.ROLES.EMPLOYEE,
+            permissions.ROLES.SUPER_ADMIN
+        ]),
+        users.isInactive,
+        users.deactivate
+    );
 
 
 router.route('/:id/deactivate')
