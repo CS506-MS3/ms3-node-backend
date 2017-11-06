@@ -1,8 +1,16 @@
 var supertest = require('supertest')
-var should = require('should')
 var server  = supertest.agent('http://localhost:3000')
+const chai = require('chai');
+const sinon = require('sinon');
+const should = require('should');
+const sinonChai = require('sinon-chai');
 
-describe('/api/users Test', function() {
+chai.should();
+chai.use(sinonChai);
+
+const coreTests = require('./core/core.suite');
+
+xdescribe('/api/users Test', function() {
     it('GET Test Example', function(done) {
     	server
     		.get('/api/users')
@@ -28,4 +36,25 @@ describe('/api/users Test', function() {
 				done();
 			});
     });
-})
+});
+
+function runAll(tests) {
+	'use strict';
+
+	describe('Running all specs:', function () {
+		before(function () {
+			// Global Set Up
+		});
+		console.log(tests);
+		tests.forEach(function (test) {
+			test();
+		});
+		after(function () {
+			// Global Teardown
+		});
+	});
+}
+
+runAll([
+	coreTests.runSuite
+]);
