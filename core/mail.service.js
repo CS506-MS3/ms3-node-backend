@@ -1,10 +1,10 @@
 class Mailer {
-    private transporter;
 
-    private static ACTIVATION_EMAIL_TITLE = 'MS3 Activation Link';
-    private static ACTIVATE_PAGE_URI = '/account/activate?token=';
 
     constructor(nodemailer, tokenizer, secret, CONFIG) {
+        this.ACTIVATION_EMAIL_TITLE = 'MS3 Activation Link';
+        this.ACTIVATE_PAGE_URI = '/account/activate?token=';
+
         this.tokenizer = tokenizer;
         this.CONFIG = CONFIG;
 
@@ -43,7 +43,7 @@ class Mailer {
         });
     }
 
-    private getActivationLink(token) {
+    getActivationLink(token) {
         let url = this.CONFIG.WEB_URL;
         url += this.ACTIVATE_PAGE_URI;
         url += token;
