@@ -1,9 +1,10 @@
 /* Core Dependencies */
 const express = require('express');
 const bodyParser = require('body-parser');
+const morgan = require('morgan');
 
 /* Other 3rd Party Dependencies */
-const secret = require('../secret/secret.json');
+const secret = require('./secret/secret.json');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
@@ -35,7 +36,7 @@ const CONFIG = {
 };
 // TODO: CONFIG & ENV should be combined
 /* Import Env */
-const ENV = require('./environments/environment');
+const ENV = require('./environments/environment')();
 
 /* Set-up Scripts */
 require('./core/super-admin-creator')();
@@ -95,7 +96,20 @@ app.get('/', function(req, res){
 	res.send('Hello');
 });
 
+app.use(morgan('dev', {
+    skip: function (req, res) {
+        return res.statusCode < 400
+    }, stream: process.stderr
+}));
+
+app.use(morgan('dev', {
+
+    skip: function (req, res) {
+        return res.statusCode >= 400
+    }, stream: process.stdout
+}));
+
 /* Run */
 app.use('/api', router);
-app.listen(3000);
+app.listen(ENV.PORT, () => console.log(`Application Server listening on port ${ENV.PORT}`));
 
