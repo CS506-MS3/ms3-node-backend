@@ -2,6 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+const logger = require('./core/logger');
 
 /* Other 3rd Party Dependencies */
 const secret = require('./secret/secret.json');
@@ -99,17 +100,17 @@ app.get('/', function(req, res){
 app.use(morgan('dev', {
     skip: function (req, res) {
         return res.statusCode < 400
-    }, stream: process.stderr
+    }, stream: logger.errorStream
 }));
 
 app.use(morgan('dev', {
 
     skip: function (req, res) {
         return res.statusCode >= 400
-    }, stream: process.stdout
+    }, stream: logger.stream
 }));
 
 /* Run */
 app.use('/api', router);
-app.listen(ENV.PORT, () => console.log(`Application Server listening on port ${ENV.PORT}`));
+app.listen(ENV.PORT, () => logger.info(`Application Server listening on port ${ENV.PORT}`));
 

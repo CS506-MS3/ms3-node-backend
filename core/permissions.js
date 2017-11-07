@@ -1,4 +1,5 @@
 const utils = require('./utils');
+const logger = require('./logger');
 
 module.exports = (function () {
     'use strict';
@@ -55,7 +56,7 @@ module.exports = (function () {
                 next();
             }
         } catch (err) {
-            console.log(err);
+            logger.error(err);
             res.status(403).json({message: 'Invalid Permissions'});
         }
     }

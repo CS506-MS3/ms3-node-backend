@@ -2,7 +2,7 @@ const secret = require('../secret/secret.json');
 const crypto = require('crypto');
 
 const permissions = require('../core/permissions');
-
+const logger = require('./logger');
 const Datastore = require('@google-cloud/datastore');
 const datastore = Datastore();
 
@@ -50,10 +50,10 @@ module.exports = (function () {
                             .digest('hex')
                     }
                 })
-                    .then(() => console.log(`SuperAdmin ${email} Created`))
-                    .catch((error) => console.log(error));
+                    .then(() => logger.info(`SuperAdmin ${email} Created`))
+                    .catch((error) => logger.info(error));
             } else {
-                console.log(`SuperAdmin ${email} Already Exists`);
+                logger.info(`SuperAdmin ${email} Already Exists`);
             }
         });
     }
