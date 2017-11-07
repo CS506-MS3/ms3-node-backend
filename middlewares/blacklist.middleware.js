@@ -1,6 +1,4 @@
-function blacklistMiddleware(
-    datastore, errorResponse, CONFIG
-) {
+function blacklistMiddleware(datastore, errorResponse, CONFIG) {
     'use strict';
 
     const ENTITY_KEY = CONFIG.ENTITY_KEYS.EMAIL_BLACKLIST;
@@ -70,18 +68,20 @@ function blacklistMiddleware(
         const body = req.body;
         const query = datastore.createQuery(ENTITY_KEY).filter('email', '=', body.email);
 
-        datastore.runQuery(query, (error, entities) => {
-            if (error) {
+        datastore.runQuery(query)
+            .then((result) => {
+                const entities = result[0];
+                if (entities.length > 0) {
 
+                    errorResponse.send(res, 409, 'Email Exists');
+                } else {
+
+                    next();
+                }
+            })
+            .catch((error) => {
                 errorResponse.send(res, 500, 'Internal Server Error', error);
-            } else if (entities.length > 0) {
-
-                errorResponse.send(res, 409, 'Email Exists');
-            } else {
-
-                next();
-            }
-        });
+            });
     }
 }
 
