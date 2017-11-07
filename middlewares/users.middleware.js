@@ -3,10 +3,6 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
 
     const ENTITY_KEY = CONFIG.ENTITY_KEYS.USERS;
 
-    datastore.runQuery(myQuery)
-        .then((response) => console.log('response :' + JSON.stringify(response)))
-        .catch((error) => console.log('Error: ' + error));
-
     return {
         getList: getList,
         getUser: getUser,
@@ -25,9 +21,12 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
         const query = datastore.createQuery(ENTITY_KEY);
 
         datastore.runQuery(query)
-            .then((entities) => {
+            .then((result) => {
+                const entities = result[0];
 
-                res.status(200).json(entities);
+                res.status(200).json(entities.map((entity) => {
+                    return Object.assign({}, {id: parseInt(entity[datastore.KEY].id)}, entity);
+                }));
             })
             .catch((error) => {
 
@@ -36,8 +35,8 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     }
 
     function getUser(req, res, next) {
-        const key = datastore.key([ENTITY_KEY, req.params.id]);
-        datstore.get(key)
+        const key = datastore.key([ENTITY_KEY, parseInt(req.params.id)]);
+        datastore.get(key)
             .then((result) => {
                 let entity = result[0];
                 if (entity) {
@@ -47,7 +46,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
                     next();
                 } else {
 
-                    errorResponse.sent(res, 404, 'User Not Found');
+                    errorResponse.send(res, 404, 'User Not Found');
                 }
             })
             .catch((error) => {
@@ -70,14 +69,14 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
         const key = res.locals.userKey;
         const entity = res.locals.userData;
 
-        if (entity.status === status) {
+        if (entity.active === status) {
 
             res.locals.userData = entity;
             res.locals.userKey = key;
             next();
         } else {
 
-            errorResponse(res, 409, 'Account Already Active');
+            errorResponse.send(res, 409, 'Account Already Active');
         }
     }
 
