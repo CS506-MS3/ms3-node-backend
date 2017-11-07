@@ -1,6 +1,4 @@
-function authMiddleware(
-    datastore, errorResponse, secret, jwt, CONFIG
-) {
+function authMiddleware(datastore, errorResponse, secret, jwt, CONFIG) {
     'use strict';
 
     const SignInForm = require('./sign-in-form');
@@ -88,8 +86,8 @@ function authMiddleware(
 
                 res.locals.tokenKey = datastore.key([ENTITY_KEY]);
                 res.locals.tokenData = {
-                    token : res.locals.token,
-                    exp : res.locals.decoded.exp
+                    token: res.locals.token,
+                    exp: res.locals.decoded.exp
                 };
 
                 next();
@@ -104,13 +102,16 @@ function authMiddleware(
         datastore.save({
             key: res.locals.tokenKey,
             data: res.locals.tokenData
-        }, function(err) {
-            if (err) {
-                console.error(err);
-            }
-        });
+        })
+            .then(() => {
+                res.status(204).send();
+            })
+            .catch((error) => {
+                console.error(error);
+                res.status(204).send();
+            });
 
-        res.status(204).send();
+
     }
 }
 
