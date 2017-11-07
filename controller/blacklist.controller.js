@@ -38,6 +38,8 @@ function blacklistController(
             ]),
             blacklist.remove
         );
+
+    return router;
 }
 
 module.exports = blacklistController;
