@@ -6,6 +6,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     return {
         getList: getList,
         getUser: getUser,
+        checkBlacklist: checkBlacklist,
         isActive: isActive,
         isInactive: isInactive,
         activate: activate,
@@ -25,7 +26,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
                 const entities = result[0];
 
                 res.status(200).json(entities.map((entity) => {
-                    return Object.assign({}, {id: parseInt(entity[datastore.KEY].id)}, entity);
+                    return Object.assign({}, {id: entity[datastore.KEY].id || entity[datastore.KEY].name}, entity);
                 }));
             })
             .catch((error) => {
@@ -35,7 +36,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     }
 
     function getUser(req, res, next) {
-        const key = datastore.key([ENTITY_KEY, parseInt(req.params.id)]);
+        const key = datastore.key([ENTITY_KEY, parseInt(req.params.id) || req.params.id]);
         datastore.get(key)
             .then((result) => {
                 let entity = result[0];
@@ -52,6 +53,20 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
             .catch((error) => {
 
                 errorResponse.send(res, 500, 'Internal Server Error', error);
+            })
+    }
+
+    function checkBlacklist(req, res, next) {
+        const key = datastore.key([CONFIG.ENTITY_KEYS.EMAIL_BLACKLIST, res.locals.userData.email]);
+
+        datastore.get(key)
+            .then((result) => {
+                let blacklistedEmail = result[0];
+                if (blacklistedEmail) {
+                    errorResponse.send(res, 403, 'Email Blacklisted');
+                } else {
+                    next();
+                }
             })
     }
 
@@ -170,13 +185,14 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     function checkDuplicate(req, res, next) {
         const query = datastore.createQuery(ENTITY_KEY).filter('email', '=', req.body.email);
         datastore.runQuery(query)
-            .then((entities) => {
+            .then((response) => {
+                const entities = response[0];
                 if (entities.length === 0) {
 
                     next();
                 } else {
 
-                    errorResponse.send(res, 409, 'Account Already Exists');
+                    errorResponse.send(res, 409, 'Account Already Exists', entities);
                 }
             })
             .catch((error) => {
@@ -188,7 +204,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     function createUser(req, res, next) {
         const password = hashPassword(req.body.password);
 
-        const key = datastore.key([ENTITY_KEY]);
+        const key = datastore.key([ENTITY_KEY, req.body.email]);
         const entity = {
             key: key,
             excludeFromIndexes: ['phone', 'password_hash'],

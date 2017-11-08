@@ -34,6 +34,7 @@ function userController(
                 permissions.ROLES.SUPER_ADMIN
             ]),
             users.getUser,
+            users.checkBlacklist,
             users.isInactive,
             users.activate
         );
