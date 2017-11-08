@@ -14,7 +14,6 @@ function blacklistController(
             permissions.getRoleGuard([
                 CONFIG.ROLES.EMPLOYEE, CONFIG.ROLES.SUPER_ADMIN
             ]),
-            blacklist.checkDuplicate,
             blacklist.add
         )
         .get(
