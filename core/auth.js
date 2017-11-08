@@ -57,10 +57,39 @@ function authMiddleware(datastore, errorResponse, secret, jwt, CONFIG) {
             res.locals.token = token;
             res.locals.decoded = decodeToken(token);
 
+            /* Got to check if account still exists & active */
+            let ACCOUNT_ENTITY_KEY;
+            switch (res.locals.decoded.data.type) {
+                case CONFIG.ROLES.USER: {
+                    ACCOUNT_ENTITY_KEY = CONFIG.ENTITY_KEYS.USERS;
+                }
+                case CONFIG.ROLES.EMPLOYEE:
+                case CONFIG.ROLES.SUPER_ADMIN: {
+                    ACCOUNT_ENTITY_KEY = CONFIG.ENTITY_KEYS.EMPLOYEES;
+                }
+            }
+
+            const query = datastore.createQuery([ACCOUNT_ENTITY_KEY])
+                .filter('email', '=', res.locals.decoded.data.email)
+                .filter('active', '=', true);
+
+            datastore.runQuery(query)
+                .then((response) => {
+                    const entities = response[0];
+                    if (entities.length === 0) {
+                        errorResponse.send(res, 401, 'Invalid Token');
+                    } else {
+                        res.locals.tokenUser = entities[0];
+                    }
+                })
+                .catch((error) => {
+                    errorResponse.send(res, 401, 'Invalid Token', error);
+                });
+
             next();
         } catch (error) {
 
-            errorResponse(res, 401, 'Invalid Token', error);
+            errorResponse.send(res, 401, 'Invalid Token', error);
         }
     }
 
