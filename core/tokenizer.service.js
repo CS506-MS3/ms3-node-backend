@@ -6,13 +6,13 @@ class Tokenizer {
     }
 
     tokenize(data, expiry) {
-        return jwt.sign(
+        return this.jwt.sign(
             {
                 data: data
             },
             this.secret.token_secret,
             {
-                expiresIn: expiry
+                expiresIn: expiry || this.CONFIG.TOKEN_CONFIG.DEFAULT_EXPIRY
             }
         );
     }
