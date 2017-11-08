@@ -33,7 +33,10 @@ const CONFIG = {
     WEB_URL: 'https://ms3-web.firebaseapp.com',
     TOKEN_CONFIG: require('./configs/token.config'),
     ROLES: require('./configs/roles.constants'),
-    ENTITY_KEYS: require('./configs/entity-keys.constants')
+    ENTITY_KEYS: require('./configs/entity-keys.constants'),
+    MAILER: {
+        FROM: 'ms3.cs506@gmail.com'
+    }
 };
 // TODO: CONFIG & ENV should be combined
 /* Import Env */
@@ -62,7 +65,7 @@ const datastore = ENV.connectToDatastore();
 
 /* Initialize Core Services */
 const tokenizer = new Tokenizer(jwt, secret, CONFIG);
-const mailer = new Mailer(nodemailer, tokenizer, secret, CONFIG);
+const mailer = Mailer(nodemailer, tokenizer, secret, CONFIG);
 
 /* Initialize Middleware */
 const auth = AuthMiddleware(datastore, errorResponseService, secret, jwt, CONFIG);
