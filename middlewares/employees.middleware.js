@@ -39,7 +39,7 @@ function employeesMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     function checkForm(req, res, next) {
         if (req.body.email === undefined || req.body.password === undefined) {
 
-            errorResponse(res, 400, 'Malformed Request')
+            errorResponse.send(res, 400, 'Malformed Request')
         } else {
 
             next();
@@ -136,7 +136,7 @@ function employeesMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
 
                 res.status(200).json(entities.map((entity) => {
                     return {
-                        id: parseInt(entity[datastore.KEY].id),
+                        id: parseInt(entity[datastore.KEY].id) || entity[datastore.KEY].name,
                         email: entity.email,
                         phone: entity.phone || '',
                         active: entity.active
@@ -149,7 +149,7 @@ function employeesMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     }
 
     function getByKey(req, res, next) {
-        const key = datastore.key([ENTITY_KEY, parseInt(req.params['id'])]);
+        const key = datastore.key([ENTITY_KEY, parseInt(req.params.id) || req.params.id]);
 
         datastore.get(key)
             .then((response) => {
@@ -168,7 +168,7 @@ function employeesMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     }
 
     function remove(req, res) {
-        const key = datastore.key([ENTITY_KEY, parseInt(req.params['id'])]);
+        const key = datastore.key([ENTITY_KEY, parseInt(req.params.id) || req.params.id]);
 
         datastore.delete(key)
             .then(() => {
@@ -179,7 +179,7 @@ function employeesMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
             })
             .catch((error) => {
 
-                errorResponse(res, 500, 'Internal Server Error', error);
+                errorResponse.send(res, 500, 'Internal Server Error', error);
             });
     }
 }
