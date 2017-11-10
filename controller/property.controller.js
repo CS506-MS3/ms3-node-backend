@@ -20,8 +20,8 @@ function propertyController(
             permissions.getRoleGuard([
                 permissions.ROLES.USER
             ]),
-            // FormValidation
-            // properties.create // Save Property & Update User's my property list
+            properties.validateCreateForm,
+            properties.create // Save Property & Update User's my property list
             // Check User's Access - If has subscription, send 200. If not, send 402
         )
         .get(
