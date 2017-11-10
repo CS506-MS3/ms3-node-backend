@@ -1,6 +1,4 @@
-function blacklistMiddleware(
-    datastore, errorResponse, CONFIG
-) {
+function blacklistMiddleware(datastore, errorResponse, CONFIG) {
     'use strict';
 
     const ENTITY_KEY = CONFIG.ENTITY_KEYS.EMAIL_BLACKLIST;
@@ -8,32 +6,47 @@ function blacklistMiddleware(
     return {
         add: add,
         getList: getList,
-        remove: remove,
-        checkDuplicate: checkDuplicate
+        remove: remove
     };
 
     function add(req, res) {
-        let key = datastore.key([ENTITY_KEY]);
-        let entity = {
-            key: key,
+        let userKey = datastore.key([CONFIG.ENTITY_KEYS.USERS, req.body.email]);
+        let blacklistKey = datastore.key([ENTITY_KEY, req.body.email]);
+        let blacklistEntity = {
+            key: blacklistKey,
             data: {
                 email: req.body.email,
-                createdAt: new Date().toJson()
+                createdAt: new Date().toJSON()
             }
         };
 
-        datastore.save(entity)
+        const transaction = datastore.transaction();
+        transaction.run()
+            .then(() => transaction.get(userKey))
+            .then((results) => {
+                const user = results[0];
+                const entities = [blacklistEntity];
+                if (user) {
+                    user.active = false;
+                    entities.push({
+                        key: userKey,
+                        data: user
+                    });
+                }
+                transaction.save(entities);
+                return transaction.commit();
+            })
             .then(() => {
-
                 res.status(200).json({
-                    id: key.id,
-                    email: entity.data.email,
-                    createdAt: entity.data.createdAt
+                    id: blacklistKey.name,
+                    email: blacklistEntity.data.email,
+                    createdAt: blacklistEntity.data.createdAt
                 });
+                return new Promise((resolve, reject) => resolve());
             })
             .catch((error) => {
-
-                errorResponse(res, 500, 'Internal Server Error', error);
+                errorResponse.send(res, 500, 'Internal Server Error', error);
+                transaction.rollback();
             });
     }
 
@@ -64,24 +77,6 @@ function blacklistMiddleware(
 
                 errorResponse.send(res, 500, 'Internal Server Error', error);
             });
-    }
-
-    function checkDuplicate(req, res, next) {
-        const body = req.body;
-        const query = datastore.createQuery(ENTITY_KEY).filter('email', '=', body.email);
-
-        datastore.runQuery(query, (error, entities) => {
-            if (error) {
-
-                errorResponse.send(res, 500, 'Internal Server Error', error);
-            } else if (entities.length > 0) {
-
-                errorResponse.send(res, 409, 'Email Exists');
-            } else {
-
-                next();
-            }
-        });
     }
 }
 

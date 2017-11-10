@@ -8,11 +8,6 @@ function userController(
     router.use(bodyParser.urlencoded({extended: true}));
     router.use(bodyParser.json());
 
-    router.use(function timeLog(req, res, next) {
-        console.log('In User Controller @ Time: ', Date.now());
-        next();
-    });
-
     router.route('/')
         .get(
             auth.checkAuth,
@@ -31,7 +26,7 @@ function userController(
         );
 
     router.route('/:id/activate')
-        .get(
+        .put(
             auth.checkAuth,
             auth.checkInactiveToken,
             permissions.getRoleGuard([
@@ -39,6 +34,7 @@ function userController(
                 permissions.ROLES.SUPER_ADMIN
             ]),
             users.getUser,
+            users.checkBlacklist,
             users.isInactive,
             users.activate
         );

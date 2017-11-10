@@ -1,6 +1,4 @@
-function authMiddleware(
-    datastore, errorResponse, secret, jwt, CONFIG
-) {
+function authMiddleware(datastore, errorResponse, secret, jwt, CONFIG) {
     'use strict';
 
     const SignInForm = require('./sign-in-form');
@@ -59,10 +57,39 @@ function authMiddleware(
             res.locals.token = token;
             res.locals.decoded = decodeToken(token);
 
+            /* Got to check if account still exists & active */
+            let ACCOUNT_ENTITY_KEY;
+            switch (res.locals.decoded.data.type) {
+                case CONFIG.ROLES.USER: {
+                    ACCOUNT_ENTITY_KEY = CONFIG.ENTITY_KEYS.USERS;
+                }
+                case CONFIG.ROLES.EMPLOYEE:
+                case CONFIG.ROLES.SUPER_ADMIN: {
+                    ACCOUNT_ENTITY_KEY = CONFIG.ENTITY_KEYS.EMPLOYEES;
+                }
+            }
+
+            const query = datastore.createQuery([ACCOUNT_ENTITY_KEY])
+                .filter('email', '=', res.locals.decoded.data.email)
+                .filter('active', '=', true);
+
+            datastore.runQuery(query)
+                .then((response) => {
+                    const entities = response[0];
+                    if (entities.length === 0) {
+                        errorResponse.send(res, 401, 'Invalid Token');
+                    } else {
+                        res.locals.tokenUser = entities[0];
+                    }
+                })
+                .catch((error) => {
+                    errorResponse.send(res, 401, 'Invalid Token', error);
+                });
+
             next();
         } catch (error) {
 
-            errorResponse(res, 401, 'Invalid Token', error);
+            errorResponse.send(res, 401, 'Invalid Token', error);
         }
     }
 
@@ -88,8 +115,8 @@ function authMiddleware(
 
                 res.locals.tokenKey = datastore.key([ENTITY_KEY]);
                 res.locals.tokenData = {
-                    token : res.locals.token,
-                    exp : res.locals.decoded.exp
+                    token: res.locals.token,
+                    exp: res.locals.decoded.exp
                 };
 
                 next();
@@ -104,13 +131,16 @@ function authMiddleware(
         datastore.save({
             key: res.locals.tokenKey,
             data: res.locals.tokenData
-        }, function(err) {
-            if (err) {
-                console.error(err);
-            }
-        });
+        })
+            .then(() => {
+                res.status(204).send();
+            })
+            .catch((error) => {
+                console.error(error);
+                res.status(204).send();
+            });
 
-        res.status(204).send();
+
     }
 }
 

@@ -11,11 +11,6 @@ const datastore = Datastore();
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
-router.use(function timeLog (req, res, next) {
-  console.log('In Auth Controller @ Time: ', Date.now());
-  next();
-});
-
 router.route('/')
 	
 	.get(function(req, res){ // generate employee token for testing only

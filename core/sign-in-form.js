@@ -2,9 +2,6 @@ module.exports = (function () {
     'use strict';
 
     class SignInForm {
-        email;
-        password;
-
         constructor(body) {
             this.email = body.email;
             this.password = body.password;
@@ -12,7 +9,7 @@ module.exports = (function () {
 
         isValid() {
 
-            return email !== undefined && password !== undefined;
+            return this.email !== undefined && this.password !== undefined;
         }
     }
 
