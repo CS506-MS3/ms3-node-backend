@@ -38,7 +38,7 @@ router.route('/')
 
     .post(auth.checkAuth,
         auth.checkInactiveToken,
-        function(req, res, next) {
+        function(req, res, next) { // get user entity and check if stripe_id exists
             const key = datastore.key([CONFIG.ENTITY_KEYS.USERS, parseInt(req.locals.decoded.data.id)]);
             datastore.get(key)
             .then((result) => {
@@ -46,6 +46,9 @@ router.route('/')
                 if (entity) {
                     res.locals.userData = entity;
                     res.locals.userKey = key;
+                    if (entity.stripe_id === 0) {
+                        res.locals.create_stripe_customer = true;
+                    }
                     next();
                 } else {
                     errorResponse.send(res, 401, 'Invalid Token');
@@ -54,8 +57,8 @@ router.route('/')
             .catch((error) => {
                 errorResponse.send(res, 500, 'Internal Server Error', error);
             })
-        }, function(req, res, next) { // create Stripe customer if stripe_id = 0
-            if (res.locals.userData.stripe_id === 0) {
+        }, function(req, res, next) { // create Stripe customer if necessary
+            if (res.locals.create_stripe_customer === true) {
                 stripe.customers.create({
                     email: res.locals.tokenUse.email;
                 }, function(err, customer) {
@@ -69,8 +72,25 @@ router.route('/')
             } else {
                 next();
             }
-      	}, function(req, res, next) {
+      	}, function(req, res, next) { // update user entity if necessary
+            if (res.locals.create_stripe_customer === true) {
+                let entity = {
+                    key: res.locals.userKey,
+                    excludeFromIndexes: ['phone', 'password_hash'],
+                    data: res.locals.userData
+                };
 
+                datastore.save(entity)
+                    .then(() => {
+                        next();
+                    })
+                    .catch((error) => {
+
+                        errorResponse.send(res, 500, 'Internal Server Error', error);
+                    });
+            } else {
+                next();
+            }
         }
     );
 module.exports = router;
