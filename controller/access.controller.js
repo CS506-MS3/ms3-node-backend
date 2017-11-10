@@ -85,12 +85,39 @@ router.route('/')
                         next();
                     })
                     .catch((error) => {
-
                         errorResponse.send(res, 500, 'Internal Server Error', error);
                     });
             } else {
                 next();
             }
+        }, function(req, res, next) { // create subscription
+            stripe.subscriptions.create({
+              customer: res.locals.userData.stripe_id,
+              items: [
+                {
+                  plan: req.body.type.type,
+                },
+              ],
+              source: req.body.token.id
+            }, function(err, subscription) {
+                if (err) {
+                    errorResponse.send(res, 500, 'Internal Server Error', error);
+                } else {
+                    if (req.body.type.type === 'vendor') {
+                        res.locals.userData.access.vendor_payment_amount = subscription.plan.amount;
+                        res.locals.userData.access.vendor_next_payment_date = new Date(subscription.current_period_end);
+                        next();
+                    } else if (req.body.type.type === 'customer') {
+                        res.locals.userData.access.customer_payment_amount = subscription.plan.amount;
+                        res.locals.userData.access.customer_next_payment_date = new Date(subscription.current_period_end);
+                        next();
+                    } else {
+                        errorResponse.send(res, 400, 'Malformed Request');
+                    }
+                }
+            });
+        }, function(req, res, next) { // 
+
         }
     );
 module.exports = router;
