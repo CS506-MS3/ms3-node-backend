@@ -21,6 +21,7 @@ const AuthMiddleware = require('./core/auth');
 const EmployeesMiddleware = require('./middlewares/employees.middleware');
 const UsersMiddleware = require('./middlewares/users.middleware');
 const BlacklistMiddleware = require('./middlewares/blacklist.middleware');
+const PropertiesMiddleware = require('./middlewares/properties.middleware');
 
 /* Import Controllers */
 const EmployeesController = require('./controller/employees.controller');
