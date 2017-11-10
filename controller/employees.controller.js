@@ -8,11 +8,6 @@ function employeesController(
     router.use(bodyParser.urlencoded({extended: true}));
     router.use(bodyParser.json());
 
-    router.use(function timeLog(req, res, next) {
-        console.log('In Employee Controller @ Time: ', Date.now());
-        next();
-    });
-
     router.route('/')
         .post(
             auth.checkAuth,

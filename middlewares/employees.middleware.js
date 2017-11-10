@@ -1,6 +1,4 @@
-function employeesMiddleware(
-    datastore, errorResponse, secret, crypto, CONFIG
-) {
+function employeesMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     'use strict';
 
     const ENTITY_KEY = CONFIG.ENTITY_KEYS.EMPLOYEES;
@@ -28,9 +26,6 @@ function employeesMiddleware(
             } else if (entities.length === 0) {
 
                 errorResponse.send(res, 401, 'Account Not Found');
-            } else if (!this._checkStatus(entities[0])) {
-
-                errorResponse.send(res, 403, 'Inactive Account');
             } else {
                 res.locals.userData = entities[0];
                 res.locals.userKey = entities[0][datastore.KEY];
@@ -44,7 +39,7 @@ function employeesMiddleware(
     function checkForm(req, res, next) {
         if (req.body.email === undefined || req.body.password === undefined) {
 
-            errorResponse(res, 400, 'Malformed Request')
+            errorResponse.send(res, 400, 'Malformed Request')
         } else {
 
             next();
@@ -55,18 +50,22 @@ function employeesMiddleware(
         const body = req.body;
         const query = datastore.createQuery(ENTITY_KEY).filter('email', '=', body.email);
 
-        datastore.runQuery(query, function (error, entities) {
-            if (error) {
+        datastore.runQuery(query)
+            .then((results) => {
+                const entities = results[0];
 
+                if (entities.length > 0) {
+
+                    errorResponse.send(res, 409, 'Account Exists');
+                } else {
+
+                    next();
+                }
+
+            })
+            .catch((error) => {
                 errorResponse.send(res, 500, 'Internal Server Error', error);
-            } else if (entities.length > 0) {
-
-                errorResponse.send(res, 409, 'Account Exists');
-            } else {
-
-                next();
-            }
-        });
+            });
     }
 
     function checkPassword(req, res, next) {
@@ -97,7 +96,7 @@ function employeesMiddleware(
     function checkStatus(req, res, next) {
         const user = res.locals.userData;
 
-        if (user.status) {
+        if (user.active) {
 
             next();
         } else {
@@ -107,56 +106,69 @@ function employeesMiddleware(
     }
 
     function saveEmployee(req, res) {
-        datastore.save({
+        const entity = {
             key: datastore.key([ENTITY_KEY]),
             excludeFromIndexes: ['phone', 'password_hash'],
             data: {
                 email: req.body.email,
-                phone: '',
+                phone: req.body.phone || '',
                 active: true,
                 role: CONFIG.ROLES.EMPLOYEE,
+                created_at: new Date().toJSON(),
+                updated_at: new Date().toJSON(),
                 password_hash: crypto.createHmac('sha256', secret.password_secret)
                     .update(req.body.password)
                     .digest('hex')
             }
-        }, function (error) {
+        };
 
-            errorResponse(res, 500, 'Internal Server Error', error);
-        });
+        datastore.save(entity)
+            .then(() => res.status(201).json({message: 'Employee Created'}))
+            .catch((error) => errorResponse.send(res, 500, 'Internal Server Error', error));
     }
 
     function getList(req, res) {
-        const query = datastore.createQuery(ENTITY_KEY).filter('role', '!=', permissions.ROLES.EMPLOYEE);
+        const query = datastore.createQuery(ENTITY_KEY).filter('role', '=', CONFIG.ROLES.EMPLOYEE);
 
-        datastore.runQuery(query, function (error, entities) {
-            if (error) {
+        datastore.runQuery(query)
+            .then((response) => {
+                const entities = response[0];
 
+                res.status(200).json(entities.map((entity) => {
+                    return {
+                        id: parseInt(entity[datastore.KEY].id) || entity[datastore.KEY].name,
+                        email: entity.email,
+                        phone: entity.phone || '',
+                        active: entity.active
+                    };
+                }));
+            })
+            .catch((error) => {
                 errorResponse.send(res, 500, 'Internal Server Error', error);
-            } else if (entities.length === 0) {
-
-                res.status(200).json([]);
-            } else {
-
-                // Skip pagination for now.
-                res.status(200).json(entities);
-            }
-        });
+            });
     }
 
     function getByKey(req, res, next) {
-        datastore.get([ENTITY_KEY, req.params['id']], function (error, entity) {
-            if (error) {
+        const key = datastore.key([ENTITY_KEY, parseInt(req.params.id) || req.params.id]);
 
-                errorResponse(res, 404, 'Employee Not Found', error);
-            } else {
+        datastore.get(key)
+            .then((response) => {
+                const entity = response[0];
 
-                next();
-            }
-        });
+                if (entity) {
+                    next();
+                } else {
+                    errorResponse.send(res, 404, 'Employee Not Found');
+                }
+            })
+            .catch((error) => {
+
+                errorResponse.send(res, 500, 'Internal Server error', error);
+            });
     }
 
     function remove(req, res) {
-        const key = datastore.key([ENTITY_KEY, req.params['id']]);
+        const key = datastore.key([ENTITY_KEY, parseInt(req.params.id) || req.params.id]);
 
         datastore.delete(key)
             .then(() => {
@@ -167,7 +179,7 @@ function employeesMiddleware(
             })
             .catch((error) => {
 
-                errorResponse(res, 500, 'Internal Server Error', error);
+                errorResponse.send(res, 500, 'Internal Server Error', error);
             });
     }
 }

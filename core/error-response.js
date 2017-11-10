@@ -1,10 +1,11 @@
 module.exports = (function () {
     'use strict';
+    const logger = require('./logger');
 
     function send(res, status, message, error) {
         if (error) {
 
-            console.log(error);
+            logger.error(error);
         }
 
         if (message) {

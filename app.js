@@ -1,9 +1,11 @@
 /* Core Dependencies */
 const express = require('express');
 const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const logger = require('./core/logger');
 
 /* Other 3rd Party Dependencies */
-const secret = require('../secret/secret.json');
+const secret = require('./secret/secret.json');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
@@ -31,11 +33,14 @@ const CONFIG = {
     WEB_URL: 'https://ms3-web.firebaseapp.com',
     TOKEN_CONFIG: require('./configs/token.config'),
     ROLES: require('./configs/roles.constants'),
-    ENTITY_KEYS: require('./configs/entity-keys.constants')
+    ENTITY_KEYS: require('./configs/entity-keys.constants'),
+    MAILER: {
+        FROM: 'ms3.cs506@gmail.com'
+    }
 };
 // TODO: CONFIG & ENV should be combined
 /* Import Env */
-const ENV = require('./environments/environment');
+const ENV = require('./environments/environment')();
 
 /* Set-up Scripts */
 require('./core/super-admin-creator')();
@@ -60,7 +65,7 @@ const datastore = ENV.connectToDatastore();
 
 /* Initialize Core Services */
 const tokenizer = new Tokenizer(jwt, secret, CONFIG);
-const mailer = new Mailer(nodemailer, tokenizer, secret, CONFIG);
+const mailer = Mailer(nodemailer, tokenizer, secret, CONFIG);
 
 /* Initialize Middleware */
 const auth = AuthMiddleware(datastore, errorResponseService, secret, jwt, CONFIG);
@@ -95,7 +100,20 @@ app.get('/', function(req, res){
 	res.send('Hello');
 });
 
+app.use(morgan('dev', {
+    skip: function (req, res) {
+        return res.statusCode < 400
+    }, stream: logger.errorStream
+}));
+
+app.use(morgan('dev', {
+
+    skip: function (req, res) {
+        return res.statusCode >= 400
+    }, stream: logger.stream
+}));
+
 /* Run */
 app.use('/api', router);
-app.listen(3000);
+app.listen(ENV.PORT, () => logger.info(`Application Server listening on port ${ENV.PORT}`));
 

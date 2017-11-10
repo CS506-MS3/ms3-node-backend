@@ -3,17 +3,12 @@ var router = express.Router();
 var bodyParser = require('body-parser');
 var secret = require('../secret/secret.json')
 var jwt = require('jsonwebtoken');
-
+const logger = require('../core/logger');
 const Datastore = require('@google-cloud/datastore');
 const datastore = Datastore();
 
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
-
-router.use(function timeLog (req, res, next) {
-  console.log('In Properties Controller @ Time: ', Date.now());
-  next();
-});
 
 router.route('/')
 
@@ -34,7 +29,7 @@ router.route('/:id')
 				token = req.get('token');
 				decoded = jwt.verify(token, secret.token_secret);
 				if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
-					console.log('Missing JWT Payload Property');
+					logger.error('Missing JWT Payload Property');
 					throw new Error('Missing JWT Payload Property');
 				}
 			} catch (err) {
@@ -48,7 +43,7 @@ router.route('/:id')
 				if (decoded.data.type === 'user') {
 					if (req.body.password === undefined) {
 						valid = false;
-						console.log('Missing Password');
+						logger.error('Missing Password');
 						res.status(400);
 						res.json({ message: 'Malformed Request' });
 					}
@@ -61,13 +56,13 @@ router.route('/:id')
 				datastore.runQuery(query, function(err, entities) {
 					if (err) {
 						valid = false;
-						console.log('Error Running Token Blacklist Query');
+						logger.error('Error Running Token Blacklist Query');
 						res.status(500);
 						res.json({ message: 'Internal Server Error' });
 					} else {
 						if (entities.length != 0) {
 							valid = false;
-							console.log('Token Blacklisted');
+							logger.error('Token Blacklisted');
 							res.status(401);
 							res.json({ message: 'Invalid Auth Token' });	
 				        }

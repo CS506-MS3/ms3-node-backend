@@ -1,4 +1,5 @@
 const utils = require('./utils');
+const logger = require('./logger');
 
 module.exports = (function () {
     'use strict';
@@ -55,7 +56,7 @@ module.exports = (function () {
                 next();
             }
         } catch (err) {
-            console.log(err);
+            logger.error(err);
             res.status(403).json({message: 'Invalid Permissions'});
         }
     }
@@ -67,14 +68,19 @@ module.exports = (function () {
     }
 
     function runIf(roles, middleware) {
+
+        return conditionalMiddlewareSelector.bind(undefined, roles, middleware);
+    }
+
+    function conditionalMiddlewareSelector(roles, middleware, req, res, next) {
         const data = res.locals.decoded.data;
 
         if (hasRole(roles, data)) {
 
-            return middleware;
+            return middleware(req, res, next);
         } else {
 
-            return skipMiddleware;
+            return skipMiddleware(req, res, next);
         }
     }
 

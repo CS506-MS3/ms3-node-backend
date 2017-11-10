@@ -10,12 +10,6 @@ const datastore = Datastore();
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
-// called everytime user_controller is called
-router.use(function timeLog (req, res, next) {
-  console.log('In Activate Controller @ Time: ', Date.now());
-  next();
-});
-
 router.route('/')
 	
 	.get(function(req, res, next){ // verify JWT auth token, verify token payload
