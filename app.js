@@ -22,12 +22,14 @@ const EmployeesMiddleware = require('./middlewares/employees.middleware');
 const UsersMiddleware = require('./middlewares/users.middleware');
 const BlacklistMiddleware = require('./middlewares/blacklist.middleware');
 const PropertiesMiddleware = require('./middlewares/properties.middleware');
+const PricingsMiddleware = require('./middlewares/pricings.middleware');
 
 /* Import Controllers */
 const EmployeesController = require('./controller/employees.controller');
 const EmployeeAuthController = require('./controller/employee-auth.controller');
 const BlacklistController = require('./controller/blacklist.controller');
 const UserController = require('./controller/user.controller');
+const PricingsController = require('./controller/pricings.controller');
 
 /* Import Config Constants */
 const CONFIG = {
@@ -73,18 +75,21 @@ const auth = AuthMiddleware(datastore, errorResponseService, secret, jwt, CONFIG
 const employees = EmployeesMiddleware(datastore, errorResponseService, secret, crypto, CONFIG);
 const users = UsersMiddleware(datastore, errorResponseService, secret, crypto, CONFIG);
 const blacklist = BlacklistMiddleware(datastore, errorResponseService, CONFIG);
+const pricings = PricingsMiddleware(datastore, errorResponseService, CONFIG);
 
 /* Initialize Controllers */
 const employeesController = EmployeesController(express, bodyParser, permissions, auth, employees, CONFIG);
 const employeeAuthController = EmployeeAuthController(express, bodyParser, auth, employees);
 const blacklistController = BlacklistController(express, bodyParser, permissions, auth, blacklist, CONFIG);
 const userController = UserController(express, bodyParser, permissions, mailer, auth, users);
+const pricingsController = PricingsController(express, pricings);
 
 /* Add Routes */
 router.use('/employees', employeesController);
 router.use('/employee-auth', employeeAuthController);
 router.use('/blacklist', blacklistController);
 router.use('/users', userController);
+router.use('/pricings', pricingsController);
 
 // TODO: REFACTOR CONTROLLERS
 const authController = require('./controller/auth_controller');
