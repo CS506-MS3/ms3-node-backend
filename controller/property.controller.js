@@ -1,5 +1,5 @@
 function propertyController(
-    express, bodyParser, permissions, auth
+    express, bodyParser, permissions, auth, properties
 ) {
     'use strict';
 
@@ -8,6 +8,11 @@ function propertyController(
     router.use(bodyParser.urlencoded({extended: true}));
     router.use(bodyParser.json());
 
+    router.route('/options')
+        .get(
+            properties.getOptions
+        );
+
     router.route('/')
         .post(
             auth.checkAuth,
@@ -15,8 +20,9 @@ function propertyController(
             permissions.getRoleGuard([
                 permissions.ROLES.USER
             ]),
-            // Check User's Access
-            // properties.create // Save Property & Update User's my property list
+            properties.validateCreateForm,
+            properties.create // Save Property & Update User's my property list
+            // Check User's Access - If has subscription, send 200. If not, send 402
         )
         .get(
             // properties.getList
@@ -34,6 +40,7 @@ function propertyController(
             auth.checkAuth,
             auth.checkInactiveToken,
             permissions.getRoleGuard([
+                permissions.ROLES.USER,
                 permissions.ROLES.EMPLOYEE,
                 permissions.ROLES.SUPER_ADMIN
             ]),

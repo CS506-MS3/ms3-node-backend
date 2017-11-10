@@ -29,6 +29,7 @@ const EmployeesController = require('./controller/employees.controller');
 const EmployeeAuthController = require('./controller/employee-auth.controller');
 const BlacklistController = require('./controller/blacklist.controller');
 const UserController = require('./controller/user.controller');
+const PropertiesController = require('./controller/property.controller');
 const PricingsController = require('./controller/pricings.controller');
 
 /* Import Config Constants */
@@ -76,6 +77,7 @@ const employees = EmployeesMiddleware(datastore, errorResponseService, secret, c
 const users = UsersMiddleware(datastore, errorResponseService, secret, crypto, CONFIG);
 const blacklist = BlacklistMiddleware(datastore, errorResponseService, CONFIG);
 const pricings = PricingsMiddleware(datastore, errorResponseService, CONFIG);
+const properties = PropertiesMiddleware(datastore, errorResponseService, CONFIG);
 
 /* Initialize Controllers */
 const employeesController = EmployeesController(express, bodyParser, permissions, auth, employees, CONFIG);
@@ -83,6 +85,7 @@ const employeeAuthController = EmployeeAuthController(express, bodyParser, auth,
 const blacklistController = BlacklistController(express, bodyParser, permissions, auth, blacklist, CONFIG);
 const userController = UserController(express, bodyParser, permissions, mailer, auth, users);
 const pricingsController = PricingsController(express, pricings);
+const propertiesController = PropertiesController(express, bodyParser, permissions, auth, properties);
 
 /* Add Routes */
 router.use('/employees', employeesController);
@@ -90,6 +93,7 @@ router.use('/employee-auth', employeeAuthController);
 router.use('/blacklist', blacklistController);
 router.use('/users', userController);
 router.use('/pricings', pricingsController);
+router.use('/properties', propertiesController);
 
 // TODO: REFACTOR CONTROLLERS
 const authController = require('./controller/auth_controller');

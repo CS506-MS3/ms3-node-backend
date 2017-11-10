@@ -62,6 +62,7 @@ function authMiddleware(datastore, errorResponse, secret, jwt, CONFIG) {
             switch (res.locals.decoded.data.type) {
                 case CONFIG.ROLES.USER: {
                     ACCOUNT_ENTITY_KEY = CONFIG.ENTITY_KEYS.USERS;
+                    break;
                 }
                 case CONFIG.ROLES.EMPLOYEE:
                 case CONFIG.ROLES.SUPER_ADMIN: {
@@ -69,7 +70,7 @@ function authMiddleware(datastore, errorResponse, secret, jwt, CONFIG) {
                 }
             }
 
-            const query = datastore.createQuery([ACCOUNT_ENTITY_KEY])
+            const query = datastore.createQuery(ACCOUNT_ENTITY_KEY)
                 .filter('email', '=', res.locals.decoded.data.email)
                 .filter('active', '=', true);
 
@@ -80,13 +81,13 @@ function authMiddleware(datastore, errorResponse, secret, jwt, CONFIG) {
                         errorResponse.send(res, 401, 'Invalid Token');
                     } else {
                         res.locals.tokenUser = entities[0];
+                        next();
                     }
                 })
                 .catch((error) => {
                     errorResponse.send(res, 401, 'Invalid Token', error);
                 });
 
-            next();
         } catch (error) {
 
             errorResponse.send(res, 401, 'Invalid Token', error);
