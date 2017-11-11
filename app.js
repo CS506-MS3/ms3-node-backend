@@ -78,7 +78,7 @@ const employees = EmployeesMiddleware(datastore, errorResponseService, secret, c
 const users = UsersMiddleware(datastore, errorResponseService, secret, crypto, CONFIG);
 const blacklist = BlacklistMiddleware(datastore, errorResponseService, CONFIG);
 const pricings = PricingsMiddleware(datastore, errorResponseService, CONFIG);
-const properties = PropertiesMiddleware(datastore, errorResponseService, CONFIG);
+const properties = PropertiesMiddleware(datastore, errorResponseService, auth, CONFIG);
 
 /* Initialize Controllers */
 const employeesController = EmployeesController(express, bodyParser, permissions, auth, employees, CONFIG);

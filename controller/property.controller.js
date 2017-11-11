@@ -30,11 +30,8 @@ function propertyController(
 
     router.route('/:id')
         .get(
-            // If user has auth
-                // If user has customer access
-                    // return full detail
-            // Else
-                // Hide owner info & contact
+            properties.get,
+            properties.processPropertyDetail
         )
         .put(
             auth.checkAuth,

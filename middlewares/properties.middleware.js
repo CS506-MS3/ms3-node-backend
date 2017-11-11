@@ -1,6 +1,6 @@
 const utils = require('../core/utils');
 
-function propertiesMiddleware(datastore, errorResponse, CONFIG) {
+function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
     'use strict';
 
     const ENTITY_KEY = CONFIG.ENTITY_KEYS.PROPERTIES;
@@ -13,7 +13,9 @@ function propertiesMiddleware(datastore, errorResponse, CONFIG) {
         update,
         getOptions,
         remove,
-        getList
+        getList,
+        get,
+        processPropertyDetail
     };
 
     function validateCreateForm(req, res, next) {
@@ -347,6 +349,81 @@ function propertiesMiddleware(datastore, errorResponse, CONFIG) {
     function getAddressString(address) {
 
         return `${address.detailLevel2}, ${address.city}, ${address.state}`;
+    }
+
+    function get(req, res, next) {
+        const key = datastore.key([ENTITY_KEY, parseInt(req.params.id)]);
+
+        datastore.get(key)
+            .then((result) => {
+                const entity = result[0];
+                if (entity) {
+                    res.locals.property = entity;
+                    next();
+                } else {
+
+                    errorResponse.send(res, 404, 'Property Not Found');
+                }
+            })
+            .catch((error) => {
+                errorResponse.send(res, 500, 'Internal Server Error', error);
+            });
+
+    }
+
+    function processPropertyDetail(req, res) {
+        const token = req.get('token');
+        if (token) {
+            auth.checkAuth(req, res,
+                auth.checkInactiveToken.bind(undefined, req, res,
+                    returnProperty.bind(undefined, req, res)));
+        } else {
+            const entity = res.locals.property;
+            res.status(200).json(
+                Object.assign({}, {id: entity[datastore.KEY].id}, hideDetails(entity))
+            );
+        }
+    }
+
+    function returnProperty(req, res) {
+        const user = res.locals.decoded.data;
+        const role = res.locals.decoded.data.role;
+        const entity = res.locals.property;
+        if (role === CONFIG.ROLES.USER) {
+            const key = datastore.key([CONFIG.ENTITY_KEYS.USERS, user.id]);
+            datastore.get(key)
+                .then((result) => {
+                    const userEntity = result[0];
+                    if (userEntity) {
+                        if (userEntity.access && userEntity.access.customer_payment_amount) {
+                            res.status(200).json(
+                                Object.assign({}, {id: entity[datastore.KEY].id}, entity)
+                            );
+                        } else {
+                            const entity = res.locals.property;
+                            res.status(200).json(
+                                Object.assign({}, {id: entity[datastore.KEY].id}, hideDetails(entity))
+                            );
+                        }
+                    } else {
+                        errorResponse.send(res, 500, 'Internal Server Error');
+                    }
+                })
+        } else {
+            res.status(200).json(
+                Object.assign({}, {id: entity[datastore.KEY].id}, entity)
+            );
+        }
+    }
+
+    function hideDetails(entity) {
+        let processed = Object.assign({}, entity);
+        processed.owner = '';
+        processed.address.detailLevel1 = '';
+        processed.address.geocode.lat = Math.round(entity.address.geocode.lat * 100) / 100;
+        processed.address.geocode.lng = Math.round(entity.address.geocode.lng * 100) / 100;
+
+        return processed;
     }
 }
 
