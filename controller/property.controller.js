@@ -36,6 +36,16 @@ function propertyController(
             // Else
                 // Hide owner info & contact
         )
+        .put(
+            auth.checkAuth,
+            auth.checkInactiveToken,
+            permissions.getRoleGuard([
+                permissions.ROLES.EMPLOYEE,
+                permissions.ROLES.SUPER_ADMIN
+            ]),
+            properties.validateUpdateForm,
+            properties.update
+        )
         .delete(
             auth.checkAuth,
             auth.checkInactiveToken,

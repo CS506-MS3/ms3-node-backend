@@ -9,6 +9,8 @@ function propertiesMiddleware(datastore, errorResponse, CONFIG) {
     return {
         validateCreateForm,
         create,
+        validateUpdateForm,
+        update,
         getOptions,
         remove
     };
@@ -149,6 +151,56 @@ function propertiesMiddleware(datastore, errorResponse, CONFIG) {
             });
     }
 
+    function validateUpdateForm(req, res, next) {
+        const form = req.body;
+
+        try {
+            utils.throwIfFalse(validate(form.roomType, 'enum', true, {enumVal: ['STUDIO', '1BR', '2BR', '3BR', '4BR']}), 'roomType field error');
+            utils.throwIfFalse(validate(form.description, 'string', false), 'description field error');
+            utils.throwIfFalse(validate(form.startDate, 'datetime', true), 'startDate field error');
+            utils.throwIfFalse(validate(form.duration, 'number', true), 'duration field error');
+            utils.throwIfFalse(validate(form.options, 'array', true), 'options field error');
+
+            next();
+        } catch (error) {
+            errorResponse.send(res, 400, 'Form Invalid', error);
+        }
+    }
+
+    function update(req, res, next) {
+        const timestamp = new Date().toJSON();
+        const form = req.body;
+
+        const key = datastore.key([ENTITY_KEY, parseInt(req.params.id)]);
+
+        datastore.get(key)
+            .then((results) => {
+                const property = results[0];
+
+                if (property) {
+                    property.roomType = form.roomType;
+                    property.description = form.description;
+                    property.startDate = form.startDate;
+                    property.duration = form.duration;
+                    property.options = form.options;
+                    property.updateTime = timestamp;
+
+                    return datastore.save({
+                        key: property[datastore.KEY],
+                        data: property
+                    });
+                } else {
+                    errorResponse.send(res, 404, 'Property Not Found');
+                }
+            })
+            .then(() => res.status(200).json({
+                message: 'Updated'
+            }))
+            .catch((error) => {
+                errorResponse.send(res, 500, 'Internal Server Error', error);
+            });
+    }
+
     function getOptions(req, res) {
         const query = datastore.createQuery(OPTIONS_ENTITY_KEY);
 
@@ -198,7 +250,7 @@ function propertiesMiddleware(datastore, errorResponse, CONFIG) {
                 const entity = response[0];
                 if (entity) {
                     entity.properties = entity.properties.filter((property) => {
-                       return parseInt(property) !== parseInt(key.id);
+                        return parseInt(property) !== parseInt(key.id);
                     });
                     transaction.delete(key);
                     transaction.save({
