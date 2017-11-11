@@ -22,7 +22,7 @@ function accessController(
                 id: req.body.id
             }, function(err, plan) {
                 if (err) {
-                    errorResponse.send(res, 500, 'Internal Server Error', error);
+                    errorResponse.send(res, 500, 'Internal Server Error', err);
                 } else {
                     res.json(plan);
                 }
