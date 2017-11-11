@@ -58,6 +58,20 @@ function userController(
             users.deactivate
         );
 
+    router.route('/:id/info')
+    .get(
+        auth.checkAuth,
+        auth.checkInactiveToken,
+        function(req, res) {
+            if (res.locals.tokenUser === undefined) {
+                errorResponse.send(res, 500, 'Internal Server Error');
+            } else {
+                res.status(200);
+                res.json(res.locals.tokenUser);
+            }
+        }
+    );
+    
     return router;
 }
 
