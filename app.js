@@ -31,6 +31,7 @@ const BlacklistController = require('./controller/blacklist.controller');
 const UserController = require('./controller/user.controller');
 const PropertiesController = require('./controller/property.controller');
 const PricingsController = require('./controller/pricings.controller');
+const AccessController = require('./controller/access.controller')
 
 /* Import Config Constants */
 const CONFIG = {
@@ -85,7 +86,11 @@ const employeeAuthController = EmployeeAuthController(express, bodyParser, auth,
 const blacklistController = BlacklistController(express, bodyParser, permissions, auth, blacklist, CONFIG);
 const userController = UserController(express, bodyParser, permissions, mailer, auth, users);
 const pricingsController = PricingsController(express, pricings);
+
 const propertiesController = PropertiesController(express, bodyParser, permissions, auth, properties);
+
+const accessController = AccessController(express, bodyParser, auth, datastore, errorResponseService, secret, CONFIG);
+
 
 /* Add Routes */
 router.use('/employees', employeesController);
@@ -104,6 +109,7 @@ router.use('/reactivate', reactivateController);
 router.use('/activate', activateController);
 
 // TODO /api/access
+router.use('/access', accessController);
 // TODO /api/
 
 app.get('/', function(req, res){
