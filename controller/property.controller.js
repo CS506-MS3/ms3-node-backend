@@ -44,7 +44,7 @@ function propertyController(
                 permissions.ROLES.EMPLOYEE,
                 permissions.ROLES.SUPER_ADMIN
             ]),
-            // properties.delete
+            properties.remove
         );
 
     return router;
