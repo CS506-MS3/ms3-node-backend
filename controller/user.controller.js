@@ -67,10 +67,12 @@ function userController(
                 permissions.ROLES.EMPLOYEE,
                 permissions.ROLES.SUPER_ADMIN
         ]),
-        permissions.getOwnerGuard(
+        function(req, res, next) {
+            permissions.getOwnerGuard(
                 req.params.id,
                 permissions.ROLES.USER
-        ),
+            )
+        },
         function(req, res) {
             if (res.locals.tokenUser === undefined) {
                 errorResponse.send(res, 500, 'Internal Server Error');
