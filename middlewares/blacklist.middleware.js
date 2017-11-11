@@ -73,7 +73,7 @@ function blacklistMiddleware(datastore, errorResponse, CONFIG) {
         datastore.delete(key)
             .then(() => {
 
-                res.status(200).json({id: key.id});
+                res.status(200).json({email: key.name});
             })
             .catch((error) => {
 
