@@ -72,16 +72,7 @@ function userController(
                 permissions.ROLES.USER
         ),
         users.getUser,
-        function(req, res) {
-            if (res.locals.userData === undefined) {
-                errorResponse.send(res, 500, 'Internal Server Error');
-            } else {
-                res.status(200);
-                delete res.locals.userData.password_hash;
-                delete res.locals.userData.stripe_id;
-                res.json(res.locals.userData);
-            }
-        }
+        users.getUserInfo
     );
 
     return router;

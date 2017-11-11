@@ -6,6 +6,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     return {
         getList: getList,
         getUser: getUser,
+        getUserInfo: getUserInfo,
         checkBlacklist: checkBlacklist,
         isActive: isActive,
         isInactive: isInactive,
@@ -54,6 +55,17 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
 
                 errorResponse.send(res, 500, 'Internal Server Error', error);
             })
+    }
+
+    function getUserInfo(req, res) {
+        if (res.locals.userData === undefined) {
+            errorResponse.send(res, 500, 'Internal Server Error');
+        } else {
+            res.status(200);
+            delete res.locals.userData.password_hash;
+            delete res.locals.userData.stripe_id;
+            res.json(res.locals.userData);
+        }
     }
 
     function checkBlacklist(req, res, next) {
