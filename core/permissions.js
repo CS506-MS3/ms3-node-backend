@@ -50,6 +50,7 @@ module.exports = (function () {
 
             const data = res.locals.decoded.data;
             const paramKey = req.params.id;
+            console.log(paramKey);
             if (hasRole(roles, data)) {
                 utils.throwIfFalse(checkOwnershipParam(paramKey, data, req), 'Not an owner');
                 next();
