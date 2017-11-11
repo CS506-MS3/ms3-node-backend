@@ -77,6 +77,8 @@ function userController(
                 errorResponse.send(res, 500, 'Internal Server Error');
             } else {
                 res.status(200);
+                delete res.locals.userData.password_hash;
+                delete res.locals.userData.stripe_id;
                 res.json(res.locals.userData);
             }
         }
