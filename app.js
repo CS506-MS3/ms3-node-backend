@@ -9,6 +9,7 @@ const secret = require('./secret/secret.json');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const stripe = require("stripe")(secret.stripe_secret_key);
 
 /* Import Core Modules */
 const permissions = require('./core/permissions');
@@ -23,6 +24,7 @@ const UsersMiddleware = require('./middlewares/users.middleware');
 const BlacklistMiddleware = require('./middlewares/blacklist.middleware');
 const PropertiesMiddleware = require('./middlewares/properties.middleware');
 const PricingsMiddleware = require('./middlewares/pricings.middleware');
+const AccessMiddleware = require('./middlewares/access.middleware');
 
 /* Import Controllers */
 const EmployeesController = require('./controller/employees.controller');
@@ -79,6 +81,7 @@ const users = UsersMiddleware(datastore, errorResponseService, secret, crypto, C
 const blacklist = BlacklistMiddleware(datastore, errorResponseService, CONFIG);
 const pricings = PricingsMiddleware(datastore, errorResponseService, CONFIG);
 const properties = PropertiesMiddleware(datastore, errorResponseService, CONFIG);
+const access = AccessMiddleware(datastore, errorResponseService, stripe, CONFIG);
 
 /* Initialize Controllers */
 const employeesController = EmployeesController(express, bodyParser, permissions, auth, employees, CONFIG);
@@ -86,10 +89,8 @@ const employeeAuthController = EmployeeAuthController(express, bodyParser, auth,
 const blacklistController = BlacklistController(express, bodyParser, permissions, auth, blacklist, CONFIG);
 const userController = UserController(express, bodyParser, permissions, mailer, auth, users);
 const pricingsController = PricingsController(express, pricings);
-
 const propertiesController = PropertiesController(express, bodyParser, permissions, auth, properties);
-
-const accessController = AccessController(express, bodyParser, auth, datastore, errorResponseService, secret, CONFIG);
+const accessController = AccessController(express, bodyParser, auth, access);
 
 
 /* Add Routes */
@@ -113,7 +114,7 @@ router.use('/access', accessController);
 // TODO /api/
 
 app.get('/', function(req, res){
-	res.send('Hello');
+    res.send('Hello');
 });
 
 app.use(morgan('dev', {
