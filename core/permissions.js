@@ -39,16 +39,17 @@ module.exports = (function () {
         return roles.includes(data.type);
     }
 
-    function getOwnerGuard(paramKey, roles) {
+    function getOwnerGuard(roles) {
 
-        return runOwnerCheckMiddleware.bind(undefined, paramKey, roles);
+        return runOwnerCheckMiddleware.bind(undefined, roles);
     }
 
-    function runOwnerCheckMiddleware(paramKey, roles, req, res, next) {
+    function runOwnerCheckMiddleware(roles, req, res, next) {
         try {
             utils.throwIfFalse(isTokenDecoded(res), 'Token not extracted at previous step');
 
             const data = res.locals.decoded.data;
+            const paramKey = req.params.id;
             if (hasRole(roles, data)) {
                 utils.throwIfFalse(checkOwnershipParam(paramKey, data, req), 'Not an owner');
                 next();
