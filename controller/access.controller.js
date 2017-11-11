@@ -11,6 +11,24 @@ function accessController(
     router.use(bodyParser.urlencoded({ extended: true }));
     router.use(bodyParser.json());
     	
+    router.route('/plan')
+
+        .post(function(req, res){
+            stripe.plans.create({
+                amount: req.body.amount,
+                interval: req.body.interval,
+                name: req.body.name,
+                currency: "usd",
+                id: req.body.id
+            }, function(err, plan) {
+                if (err) {
+                    errorResponse.send(res, 500, 'Internal Server Error', error);
+                } else {
+                    res.json(plan);
+                }
+            });
+        });
+
     router.route('/')
 
         .post(auth.checkAuth,
