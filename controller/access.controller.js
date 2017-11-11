@@ -5,7 +5,7 @@ function accessController(
 
     const router = express.Router();
 
-    const stripe = require("stripe")(secret.stripe_secret_key;
+    const stripe = require("stripe")(secret.stripe_secret_key);
 
 
     router.use(bodyParser.urlencoded({ extended: true }));
@@ -16,7 +16,7 @@ function accessController(
         .post(auth.checkAuth,
             auth.checkInactiveToken,
             function(req, res, next) { // get user entity and check if stripe_id exists
-                const key = datastore.key([CONFIG.ENTITY_KEYS.USERS, parseInt(req.locals.decoded.data.id)]);
+                const key = datastore.key([CONFIG.ENTITY_KEYS.USERS, parseInt(res.locals.decoded.data.id)]);
                 datastore.get(key)
                 .then((result) => {
                     let entity = result[0];
@@ -37,7 +37,7 @@ function accessController(
             }, function(req, res, next) { // create Stripe customer if necessary
                 if (res.locals.create_stripe_customer === true) {
                     stripe.customers.create({
-                        email: res.locals.tokenUse.email;
+                        email: res.locals.decoded.data.email
                     }, function(err, customer) {
                         if (err) {
                             errorResponse.send(res, 500, 'Internal Server Error', err);
@@ -78,13 +78,13 @@ function accessController(
                   source: req.body.token.id
                 }, function(err, subscription) {
                     if (err) {
-                        errorResponse.send(res, 500, 'Internal Server Error', error);
+                        errorResponse.send(res, 500, 'Internal Server Error', err);
                     } else {
-                        if (req.body.type.type === 'vendor') {
+                        if (req.body.type.type === 'VENDOR_SUBSCRIPTION') {
                             res.locals.userData.access.vendor_payment_amount = subscription.plan.amount;
                             res.locals.userData.access.vendor_next_payment_date = new Date(subscription.current_period_end);
                             next();
-                        } else if (req.body.type.type === 'customer') {
+                        } else if (req.body.type.type === 'CUSTOMER_SUBSCRIPTION') {
                             res.locals.userData.access.customer_payment_amount = subscription.plan.amount;
                             res.locals.userData.access.customer_next_payment_date = new Date(subscription.current_period_end);
                             next();
@@ -115,4 +115,4 @@ function accessController(
 
 }
 
-module.exports = router;
+module.exports = accessController;

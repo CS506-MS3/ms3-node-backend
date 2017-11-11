@@ -84,7 +84,7 @@ const employeeAuthController = EmployeeAuthController(express, bodyParser, auth,
 const blacklistController = BlacklistController(express, bodyParser, permissions, auth, blacklist, CONFIG);
 const userController = UserController(express, bodyParser, permissions, mailer, auth, users);
 const pricingsController = PricingsController(express, pricings);
-const accessController = AccessController(express, bodyParser, auth, datastore, errorResponse, secret, CONFIG);
+const accessController = AccessController(express, bodyParser, auth, datastore, errorResponseService, secret, CONFIG);
 
 /* Add Routes */
 router.use('/employees', employeesController);
