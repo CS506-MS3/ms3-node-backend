@@ -67,6 +67,10 @@ function userController(
                 permissions.ROLES.EMPLOYEE,
                 permissions.ROLES.SUPER_ADMIN
         ]),
+        permissions.getOwnerGuard(
+                "id",
+                permissions.ROLES.USER
+        ),
         function(req, res) {
             if (res.locals.tokenUser === undefined) {
                 errorResponse.send(res, 500, 'Internal Server Error');

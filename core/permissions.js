@@ -39,19 +39,16 @@ module.exports = (function () {
         return roles.includes(data.type);
     }
 
-    function getOwnerGuard(roles) {
+    function getOwnerGuard(paramKey, roles) {
 
-        return runOwnerCheckMiddleware.bind(undefined, roles);
+        return runOwnerCheckMiddleware.bind(undefined, paramKey, roles);
     }
 
-    function runOwnerCheckMiddleware(roles, req, res, next) {
+    function runOwnerCheckMiddleware(paramKey, roles, req, res, next) {
         try {
             utils.throwIfFalse(isTokenDecoded(res), 'Token not extracted at previous step');
 
             const data = res.locals.decoded.data;
-            const paramKey = req.params.id;
-            console.error('In Onwer Guard');
-            console.error(paramKey);
             if (hasRole(roles, data)) {
                 utils.throwIfFalse(checkOwnershipParam(paramKey, data, req), 'Not an owner');
                 next();
