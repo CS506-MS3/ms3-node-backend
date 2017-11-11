@@ -60,7 +60,9 @@ function blacklistMiddleware(datastore, errorResponse, CONFIG) {
             } else {
 
                 // Skip pagination for now.
-                res.status(200).json(entities);
+                res.status(200).json({
+                    list: entities
+                });
             }
         });
     }
