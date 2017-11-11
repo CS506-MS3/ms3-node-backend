@@ -9,7 +9,8 @@ function propertiesMiddleware(datastore, errorResponse, CONFIG) {
     return {
         validateCreateForm,
         create,
-        getOptions
+        getOptions,
+        remove
     };
 
     function validateCreateForm(req, res, next) {
@@ -167,6 +168,66 @@ function propertiesMiddleware(datastore, errorResponse, CONFIG) {
 
                 errorResponse.send(res, 500, 'Internal Server Error', error);
             });
+    }
+
+    function remove(req, res) {
+        const key = datastore.key([ENTITY_KEY, parseInt(req.params.id)]);
+
+        const transaction = datastore.transaction();
+
+        transaction.run()
+            .then(() => datastore.get(key))
+            .then((response) => {
+                const entity = response[0];
+                if (entity) {
+                    if (isUser(res) && !isOwner(res, entity)) {
+                        errorResponse.send(res, 403, 'Not Owner');
+                        transaction.rollback();
+                    } else {
+                        const userKey = datastore.key([
+                            CONFIG.ENTITY_KEYS.USERS, parseInt(entity.owner)]);
+
+                        return datastore.get(userKey);
+                    }
+                } else {
+                    errorResponse.send(res, 404, 'Property Not Found');
+                    transaction.rollback();
+                }
+            })
+            .then((response) => {
+                const entity = response[0];
+                if (entity) {
+                    entity.properties = entity.properties.filter((property) => {
+                       return parseInt(property) !== parseInt(key.id);
+                    });
+                    transaction.delete(key);
+                    transaction.save({
+                        key: entity[datastore.KEY],
+                        data: entity
+                    });
+                    return transaction.commit();
+                } else {
+                    errorResponse.send(res, 404, 'User Not Found');
+                    transaction.rollback();
+                }
+            })
+            .then(() => {
+                res.status(200).json({
+                    id: key.id
+                });
+            })
+            .catch((error) => {
+                errorResponse.send(res, 500, 'Internal Server Error', error);
+                transaction.rollback();
+            });
+    }
+
+    function isUser(res) {
+        return res.locals.decoded.data.role === CONFIG.ROLES.USER;
+    }
+
+    function isOwner(res, entity) {
+        return parseInt(res.locals.decoded.id) === parseInt(entity.owner);
     }
 }
 
