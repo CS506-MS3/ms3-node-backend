@@ -31,28 +31,20 @@ function accessController(
 
     router.route('/')
 
-        .post(auth.checkAuth,
+        .post(function(req, res, next) {
+                if (req.body.token.id === undefined || req.body.type.type === undefined) {
+                    errorResponse.send(res, 400, 'Malformed Request');
+                } else {
+                    next();
+                }
+            }, auth.checkAuth,
             auth.checkInactiveToken,
-            function(req, res, next) { // get user entity and check if stripe_id exists
-                const key = datastore.key([CONFIG.ENTITY_KEYS.USERS, parseInt(res.locals.decoded.data.id)]);
-                datastore.get(key)
-                .then((result) => {
-                    let entity = result[0];
-                    if (entity) {
-                        res.locals.userData = entity;
-                        res.locals.userKey = key;
-                        if (entity.stripe_id === 0) {
-                            res.locals.create_stripe_customer = true;
-                        }
-                        next();
-                    } else {
-                        errorResponse.send(res, 401, 'Invalid Token');
-                    }
-                })
-                .catch((error) => {
-                    errorResponse.send(res, 500, 'Internal Server Error', error);
-                })
-            }, function(req, res, next) { // create Stripe customer if necessary
+            function(req, res, next) { // create Stripe customer if necessary
+                res.locals.userKey = datastore.key([CONFIG.ENTITY_KEYS.USERS, res.locals.decoded.data.id]);
+                res.locals.userData = res.locals.tokenUser;
+                if (res.locals.userData === 0) {
+                    res.locals.create_stripe_customer = true;
+                }
                 if (res.locals.create_stripe_customer === true) {
                     stripe.customers.create({
                         email: res.locals.decoded.data.email
