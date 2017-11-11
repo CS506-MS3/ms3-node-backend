@@ -71,12 +71,13 @@ function userController(
                 "id",
                 permissions.ROLES.USER
         ),
+        users.getUser,
         function(req, res) {
-            if (res.locals.tokenUser === undefined) {
+            if (res.locals.userData === undefined) {
                 errorResponse.send(res, 500, 'Internal Server Error');
             } else {
                 res.status(200);
-                res.json(res.locals.tokenUser);
+                res.json(res.locals.userData);
             }
         }
     );
