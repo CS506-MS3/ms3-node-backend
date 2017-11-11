@@ -82,11 +82,11 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
             } else {
                 if (req.body.type.type === 'VENDOR_SUBSCRIPTION') {
                     res.locals.userData.access.vendor_payment_amount = subscription.plan.amount;
-                    res.locals.userData.access.vendor_next_payment_date = new Date(subscription.current_period_end);
+                    res.locals.userData.access.vendor_next_payment_date = new Date(subscription.current_period_end * 1000);
                     next();
                 } else if (req.body.type.type === 'CUSTOMER_SUBSCRIPTION') {
                     res.locals.userData.access.customer_payment_amount = subscription.plan.amount;
-                    res.locals.userData.access.customer_next_payment_date = new Date(subscription.current_period_end);
+                    res.locals.userData.access.customer_next_payment_date = new Date(subscription.current_period_end * 1000);
                     next();
                 } else {
                     errorResponse.send(res, 400, 'Malformed Request');
