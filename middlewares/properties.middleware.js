@@ -12,7 +12,8 @@ function propertiesMiddleware(datastore, errorResponse, CONFIG) {
         validateUpdateForm,
         update,
         getOptions,
-        remove
+        remove,
+        getList
     };
 
     function validateCreateForm(req, res, next) {
@@ -280,6 +281,72 @@ function propertiesMiddleware(datastore, errorResponse, CONFIG) {
 
     function isOwner(res, entity) {
         return parseInt(res.locals.decoded.id) === parseInt(entity.owner);
+    }
+
+    function getList(req, res) {
+        let query = generateQuery(req);
+        if (query) {
+            datastore.runQuery(query)
+                .then((response) => {
+                    const entities = response[0];
+                    const meta = response[1];
+
+                    res.status(200).json({
+                        list: entities.map(generatePropertySummary),
+                        cursor: meta.endCursor
+                    });
+                })
+                .catch((error) => {
+                    errorResponse.send(res, 500, 'Internal Server Error', error);
+                });
+        } else {
+            errorResponse.send(res, 400, 'Required QueryParams Missing');
+        }
+    }
+
+    function generateQuery(req) {
+        let query = datastore.createQuery(ENTITY_KEY);
+        const sortByMap = {
+            price: 'price',
+            recent: 'updateTime'
+        };
+        // /properties?sortBy={sortBy}&direction={direction}&cursor?={cursorToken}
+        if (req.query.sortBy && req.query.direction) {
+            if (req.query.direction === 'UP') {
+                query = query.order(sortByMap[req.query.sortBy])
+            } else {
+                query = query.order(sortByMap[req.query.sortBy], {
+                    descending: true
+                });
+            }
+
+            if (req.query.cursor) {
+                query = query.limit(5).start(req.query.cursor);
+            } else {
+                query = query.limit(10);
+            }
+
+            return query;
+        } else {
+            return null;
+        }
+    }
+
+    function generatePropertySummary(entity) {
+
+        return {
+            id: entity[datastore.KEY].id,
+            title: entity.title,
+            address: getAddressString(entity.address),
+            startDate: entity.startDate,
+            duration: entity.duration,
+            price: entity.price
+        };
+    }
+
+    function getAddressString(address) {
+
+        return `${address.detailLevel2}, ${address.city}, ${address.state}`;
     }
 }
 

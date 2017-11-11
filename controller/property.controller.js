@@ -25,7 +25,7 @@ function propertyController(
             // Check User's Access - If has subscription, send 200. If not, send 402
         )
         .get(
-            // properties.getList
+            properties.getList
         );
 
     router.route('/:id')
