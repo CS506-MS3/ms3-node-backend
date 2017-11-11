@@ -25,16 +25,23 @@ function propertyController(
             // Check User's Access - If has subscription, send 200. If not, send 402
         )
         .get(
-            // properties.getList
+            properties.getList
         );
 
     router.route('/:id')
         .get(
-            // If user has auth
-                // If user has customer access
-                    // return full detail
-            // Else
-                // Hide owner info & contact
+            properties.get,
+            properties.processPropertyDetail
+        )
+        .put(
+            auth.checkAuth,
+            auth.checkInactiveToken,
+            permissions.getRoleGuard([
+                permissions.ROLES.EMPLOYEE,
+                permissions.ROLES.SUPER_ADMIN
+            ]),
+            properties.validateUpdateForm,
+            properties.update
         )
         .delete(
             auth.checkAuth,
@@ -44,7 +51,7 @@ function propertyController(
                 permissions.ROLES.EMPLOYEE,
                 permissions.ROLES.SUPER_ADMIN
             ]),
-            // properties.delete
+            properties.remove
         );
 
     return router;
