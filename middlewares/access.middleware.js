@@ -5,7 +5,9 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
     	checkStripeId: checkStripeId,
     	conditionalCreateCustomer: conditionalCreateCustomer,
     	conditionalUpdateUser: conditionalUpdateUser,
+        validatePaymentType: validatePaymentType,
     	createSubscription: createSubscription,
+        createCharge: createCharge,
     	updateUserEntity: updateUserEntity
     };
 
@@ -73,12 +75,10 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
                 res.locals.userData.access.vendor_next_payment_date === undefined || 
                 res.locals.userData.access.vendor_payment_amount === undefined ||
                 res.locals.userData.access.customer_next_payment_date === undefined || 
-                res.locals.userData.access.customer_payment_amount === undefined
+                res.locals.userData.access.customer_payment_amount === undefined ||
+                res.locals.userData.access.vendor_additional_paid === undefined
             ) {
                 throw new Error("Missing Access Property");
-            }
-            if (req.body.type.type === undefined) {
-                errorResponse.send(res, 400, 'Malformed Request');
             }
             var now = new Date();
             switch (req.body.type.type) {
@@ -101,7 +101,9 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
                 case 'VENDOR_ADDITIONAL':
                     if (res.locals.userData.access.vendor_next_payment_date < now) {
                         errorResponse.send(res, 403, 'Vendor Access Required');
-                    } else {
+                    } else if (res.locals.userData.access.vendor_additional_paid === true) {
+                        errorResponse.send(res, 409, 'Vendor Additional Already Paid');
+                    }else {
                         res.locals.additional = true;
                         next();
                     }
@@ -116,31 +118,56 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
     }
 
     function createSubscription(req, res, next) {
-        stripe.subscriptions.create({
-          customer: res.locals.userData.stripe_id,
-          items: [
-            {
-              plan: req.body.type.type,
-            },
-          ],
-          source: req.body.token.id
-        }, function(err, subscription) {
-            if (err) {
-                errorResponse.send(res, 500, 'Internal Server Error', err);
-            } else {
-                if (req.body.type.type === 'VENDOR_SUBSCRIPTION') {
-                    res.locals.userData.access.vendor_payment_amount = subscription.plan.amount;
-                    res.locals.userData.access.vendor_next_payment_date = new Date(subscription.current_period_end * 1000);
-                    next();
-                } else if (res.locals.customer === true) {
-                    res.locals.userData.access.customer_payment_amount = subscription.plan.amount;
-                    res.locals.userData.access.customer_next_payment_date = new Date(subscription.current_period_end * 1000);
-                    next();
+        if (res.locals.vendor === true || res.locals.customer === true) {
+            stripe.subscriptions.create({
+              customer: res.locals.userData.stripe_id,
+              items: [
+                {
+                  plan: req.body.type.type,
+                },
+              ],
+              source: req.body.token.id
+            }, function(err, subscription) {
+                if (err) {
+                    errorResponse.send(res, 500, 'Internal Server Error', err);
                 } else {
-                    errorResponse.send(res, 400, 'Malformed Request');
+                    if (res.locals.vendor === true) {
+                        res.locals.userData.access.vendor_payment_amount = subscription.plan.amount;
+                        res.locals.userData.access.vendor_next_payment_date = new Date(subscription.current_period_end * 1000);
+                        next();
+                    } else if (res.locals.customer === true) {
+                        res.locals.userData.access.customer_payment_amount = subscription.plan.amount;
+                        res.locals.userData.access.customer_next_payment_date = new Date(subscription.current_period_end * 1000);
+                        next();
+                    } else {
+                        errorResponse.send(res, 500, 'Internal Server Error');
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            next();
+        }
+    }
+
+    function createCharge(req, res, next) {
+        if (res.locals.additional === true) {
+            stripe.charges.create({
+                customer: res.locals.userData.stripe_id,
+                amount: 300,
+                currency: "usd",
+                description: "Vendor Additional Charge",
+                source: req.body.token.id,
+            }, function(err, charge) {
+                if (err) {
+                    errorResponse.send(res, 500, 'Internal Server Error', err);
+                } else {
+                    res.locals.userData.access.vendor_additional_paid = true;
+                    next();
+                }
+            });
+        } else {
+            next();
+        }
     }
 
     function updateUserEntity(req, res) {

@@ -19,6 +19,7 @@ function accessController(
             access.conditionalUpdateUser,
             access.validatePaymentType,
             access.createSubscription,
+            access.createCharge,
             access.updateUserEntity
         );
 
