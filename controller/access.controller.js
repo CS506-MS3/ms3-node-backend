@@ -17,6 +17,7 @@ function accessController(
             access.checkStripeId,
             access.conditionalCreateCustomer,
             access.conditionalUpdateUser,
+            access.validatePaymentType,
             access.createSubscription,
             access.updateUserEntity
         );

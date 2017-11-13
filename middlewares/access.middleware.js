@@ -77,6 +77,9 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
             ) {
                 throw new Error("Missing Access Property");
             }
+            if (req.body.type.type === undefined) {
+                errorResponse.send(res, 400, 'Malformed Request');
+            }
             var now = new Date();
             switch (req.body.type.type) {
                 case 'VENDOR_SUBSCRIPTION':
@@ -129,7 +132,7 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
                     res.locals.userData.access.vendor_payment_amount = subscription.plan.amount;
                     res.locals.userData.access.vendor_next_payment_date = new Date(subscription.current_period_end * 1000);
                     next();
-                } else if (req.body.type.type === 'CUSTOMER_SUBSCRIPTION') {
+                } else if (res.locals.customer === true) {
                     res.locals.userData.access.customer_payment_amount = subscription.plan.amount;
                     res.locals.userData.access.customer_next_payment_date = new Date(subscription.current_period_end * 1000);
                     next();
