@@ -237,7 +237,9 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
                 active: false,
                 email: req.body.email,
                 password_hash: password,
-                notification: req.body.notification
+                notification: {
+                	marketing: req.body.notification.marketing
+                }
             }
         };
 
