@@ -67,6 +67,51 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
         }
     }
 
+    function validatePaymentType(req, res, next) {
+        try {
+            if (res.locals.userData.access === undefined || 
+                res.locals.userData.access.vendor_next_payment_date === undefined || 
+                res.locals.userData.access.vendor_payment_amount === undefined ||
+                res.locals.userData.access.customer_next_payment_date === undefined || 
+                res.locals.userData.access.customer_payment_amount === undefined
+            ) {
+                throw new Error("Missing Access Property");
+            }
+            var now = new Date();
+            switch (req.body.type.type) {
+                case 'VENDOR_SUBSCRIPTION':
+                    if (res.locals.userData.access.vendor_next_payment_date >= now) {
+                        errorResponse.send(res, 409, 'Vendor Access Already Active');
+                    } else {
+                        res.locals.vendor = true;
+                        next();
+                    }
+                    break;
+                case 'CUSTOMER_SUBSCRIPTION':
+                    if (res.locals.userData.access.customer_next_payment_date >= now) {
+                        errorResponse.send(res, 409, 'Customer Access Already Active');
+                    } else {
+                        res.locals.customer = true;
+                        next();
+                    }
+                    break;
+                case 'VENDOR_ADDITIONAL':
+                    if (res.locals.userData.access.vendor_next_payment_date < now) {
+                        errorResponse.send(res, 403, 'Vendor Access Required');
+                    } else {
+                        res.locals.additional = true;
+                        next();
+                    }
+                    break;
+                default:
+                    errorResponse.send(res, 400, 'Malformed Request');
+                    break;
+            }
+        } catch (err) {
+            errorResponse.send(res, 500, 'Internal Server Error', err);
+        }
+    }
+
     function createSubscription(req, res, next) {
         stripe.subscriptions.create({
           customer: res.locals.userData.stripe_id,
