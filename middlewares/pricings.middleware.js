@@ -30,8 +30,7 @@ function pricingsMiddleware(datastore, errorResponse, CONFIG) {
             datastore.runQuery(query)
                 .then((result) => {
                     const entity = result[0];
-                    console.log(entity);
-                    res.locals.additional_price = entity.price * 100;
+                    res.locals.additional_price = entity[0].price * 100;
                     next();
                 })
                 .catch((error) => errorResponse.send(res, 500, 'Internal Server Error', error));
