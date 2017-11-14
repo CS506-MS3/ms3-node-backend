@@ -15,7 +15,8 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
         remove,
         getList,
         get,
-        processPropertyDetail
+        processPropertyDetail,
+        validateAccess
     };
 
     function validateCreateForm(req, res, next) {
@@ -92,6 +93,21 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
             }
         }
         return typecheck || typeof input === 'undefined';
+    }
+
+    function validateAccess(req, res, next) {
+        var date = new Date();
+        if (res.locals.tokenUser.access.vendor_next_payment_date < date) {
+            errorResponse.send(res, 403, 'Vendor Access Requried');
+        } else {
+            if (res.locals.tokenUser.listing.length === 0) {
+                next();
+            } else if (res.locals.tokenUser.access.vendor_additional_paid === true) {
+                next();
+            } else {
+                errorResponse.send(res, 403, 'Vendor Additional Fee Requried');
+            }
+        }
     }
 
     function create(req, res, next) {
