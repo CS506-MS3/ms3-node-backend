@@ -15,8 +15,7 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
         remove,
         getList,
         get,
-        processPropertyDetail,
-        validateAccess
+        processPropertyDetail
     };
 
     function validateCreateForm(req, res, next) {
@@ -100,9 +99,8 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
         if (res.locals.tokenUser.access.vendor_next_payment_date < date) {
             errorResponse.send(res, 403, 'Vendor Access Requried');
         } else {
-            if (res.locals.tokenUser.listing.length === 0) {
-                next();
-            } else if (res.locals.tokenUser.access.vendor_additional_paid === true) {
+            if (res.locals.tokenUser.properties.length === 0 || 
+                res.locals.tokenUser.access.vendor_additional_paid === true) {
                 next();
             } else {
                 errorResponse.send(res, 403, 'Vendor Additional Fee Requried');
@@ -152,6 +150,7 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
                     user.properties = [key.id];
                 } else {
                     user.properties = [...user.properties, key.id];
+                    user.access.vendor_additional_paid = false;
                 }
 
                 return datastore.save({
