@@ -152,7 +152,7 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
     function createCharge(req, res, next) {
         if (res.locals.additional === true) {
             stripe.charges.create({
-                amount: 300,
+                amount: res.locals.additional_price,
                 currency: "usd",
                 description: "Vendor Additional Charge",
                 source: req.body.token.id,

@@ -91,7 +91,7 @@ const blacklistController = BlacklistController(express, bodyParser, permissions
 const userController = UserController(express, bodyParser, permissions, mailer, auth, users);
 const pricingsController = PricingsController(express, pricings);
 const propertiesController = PropertiesController(express, bodyParser, permissions, auth, properties);
-const accessController = AccessController(express, bodyParser, auth, access);
+const accessController = AccessController(express, bodyParser, auth, access, pricings);
 
 
 /* Add Routes */

@@ -1,5 +1,5 @@
 function accessController(
-    express, bodyParser, auth, access
+    express, bodyParser, auth, access, pricings
 ) {
     'use strict';
 
@@ -18,6 +18,7 @@ function accessController(
             access.conditionalCreateCustomer,
             access.conditionalUpdateUser,
             access.validatePaymentType,
+            pricings.getAdditionalPricing,
             access.createSubscription,
             access.createCharge,
             access.updateUserEntity
