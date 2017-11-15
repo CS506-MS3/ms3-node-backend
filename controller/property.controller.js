@@ -21,6 +21,7 @@ function propertyController(
                 permissions.ROLES.USER
             ]),
             properties.validateCreateForm,
+            properties.validateAccess,
             properties.create // Save Property & Update User's my property list
             // Check User's Access - If has subscription, send 200. If not, send 402
         )

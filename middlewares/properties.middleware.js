@@ -94,6 +94,20 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
         return typecheck || typeof input === 'undefined';
     }
 
+    function validateAccess(req, res, next) {
+        var date = new Date();
+        if (res.locals.tokenUser.access.vendor_next_payment_date < date) {
+            errorResponse.send(res, 403, 'Vendor Access Requried');
+        } else {
+            if (res.locals.tokenUser.properties.length === 0 || 
+                res.locals.tokenUser.access.vendor_additional_paid === true) {
+                next();
+            } else {
+                errorResponse.send(res, 403, 'Vendor Additional Fee Requried');
+            }
+        }
+    }
+
     function create(req, res, next) {
         const timestamp = new Date().toJSON();
         const form = req.body;
@@ -136,6 +150,7 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
                     user.properties = [key.id];
                 } else {
                     user.properties = [...user.properties, key.id];
+                    user.access.vendor_additional_paid = false;
                 }
 
                 return datastore.save({
