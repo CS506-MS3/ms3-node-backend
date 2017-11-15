@@ -307,25 +307,32 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
     }
 
     function generateQuery(req) {
+        const DEFAULT_INITIAL_COUNT = 10;
+        const DEFAULT_MORE_COUNT = 5;
+        let entitiesLength;
         let query = datastore.createQuery(ENTITY_KEY);
         const sortByMap = {
             price: 'price',
             recent: 'updateTime'
         };
+
         // /properties?sortBy={sortBy}&direction={direction}&cursor?={cursorToken}
         if (req.query.sortBy && req.query.direction) {
-            if (req.query.direction === 'UP') {
-                query = query.order(sortByMap[req.query.sortBy])
+            query = query.order(sortByMap[req.query.sortBy], {
+                descending: req.query.direction === 'DOWN'
+            });
+
+            if (req.query.count) {
+                entitiesLength = parseInt(req.query.count);
+            } else if (req.query.cursor) {
+                entitiesLength = DEFAULT_MORE_COUNT;
             } else {
-                query = query.order(sortByMap[req.query.sortBy], {
-                    descending: true
-                });
+                entitiesLength = DEFAULT_INITIAL_COUNT;
             }
+            query = query.limit(entitiesLength);
 
             if (req.query.cursor) {
-                query = query.limit(5).start(req.query.cursor);
-            } else {
-                query = query.limit(10);
+                query = query.start(req.query.cursor);
             }
 
             return query;
