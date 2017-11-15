@@ -10,6 +10,7 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
         validateCreateForm,
         create,
         validateUpdateForm,
+        validateAccess,
         update,
         getOptions,
         remove,
