@@ -6,6 +6,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     return {
         getList: getList,
         getUser: getUser,
+        getUserInfo: getUserInfo,
         checkBlacklist: checkBlacklist,
         isActive: isActive,
         isInactive: isInactive,
@@ -54,6 +55,17 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
 
                 errorResponse.send(res, 500, 'Internal Server Error', error);
             })
+    }
+
+    function getUserInfo(req, res) {
+        if (res.locals.userData === undefined) {
+            errorResponse.send(res, 500, 'Internal Server Error');
+        } else {
+            res.status(200);
+            delete res.locals.userData.password_hash;
+            delete res.locals.userData.stripe_id;
+            res.json(res.locals.userData);
+        }
     }
 
     function checkBlacklist(req, res, next) {
@@ -203,7 +215,8 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
 
     function createUser(req, res, next) {
         const password = hashPassword(req.body.password);
-
+        var access_date = new Date();
+		access_date.setDate(access_date.getDate() - 1); // set to yesterday
         const key = datastore.key([ENTITY_KEY, req.body.email]);
         const entity = {
             key: key,
@@ -211,14 +224,22 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
             data: {
                 bid: {},
                 wishlist: [],
-                access: {},
+                access: {
+                	customer_next_payment_date: access_date,
+                	vendor_next_payment_date: access_date,
+                	customer_payment_amount: 500,
+                	vendor_payment_amount: 500,
+                	vendor_additional_paid: false
+                },
                 phone: req.body.phone ? 0 : req.body.phone,
                 listing: [],
                 stripe_id: 0,
                 active: false,
                 email: req.body.email,
                 password_hash: password,
-                notification: req.body.notification
+                notification: {
+                	marketing: req.body.notification.marketing
+                }
             }
         };
 
