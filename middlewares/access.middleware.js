@@ -12,7 +12,7 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
     };
 
     function checkStripeId(req, res, next) {
-        const key = datastore.key([CONFIG.ENTITY_KEYS.USERS, parseInt(res.locals.decoded.data.id)]);
+        const key = datastore.key([CONFIG.ENTITY_KEYS.USERS, parseInt(res.locals.decoded.data.id) || res.locals.decoded.data.id]);
         datastore.get(key)
         .then((result) => {
             let entity = result[0];
@@ -105,6 +105,7 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
                         errorResponse.send(res, 409, 'Vendor Additional Already Paid');
                     }else {
                         res.locals.additional = true;
+                        res.locals.additional_price = req.body.type.price;
                         next();
                     }
                     break;
@@ -118,6 +119,7 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
     }
 
     function createSubscription(req, res, next) {
+        const MILLISECONDS_PER_SECOND = 1000;
         if (res.locals.vendor === true || res.locals.customer === true) {
             stripe.subscriptions.create({
               customer: res.locals.userData.stripe_id,
@@ -132,12 +134,12 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
                     errorResponse.send(res, 500, 'Internal Server Error', err);
                 } else {
                     if (res.locals.vendor === true) {
-                        res.locals.userData.access.vendor_payment_amount = subscription.plan.amount;
-                        res.locals.userData.access.vendor_next_payment_date = new Date(subscription.current_period_end * 1000);
+                        res.locals.userData.access.vendor_payment_amount = subscription.plan.amount / 100;
+                        res.locals.userData.access.vendor_next_payment_date = new Date(subscription.current_period_end * MILLISECONDS_PER_SECOND);
                         next();
                     } else if (res.locals.customer === true) {
-                        res.locals.userData.access.customer_payment_amount = subscription.plan.amount;
-                        res.locals.userData.access.customer_next_payment_date = new Date(subscription.current_period_end * 1000);
+                        res.locals.userData.access.customer_payment_amount = subscription.plan.amount / 100;
+                        res.locals.userData.access.customer_next_payment_date = new Date(subscription.current_period_end * MILLISECONDS_PER_SECOND);
                         next();
                     } else {
                         errorResponse.send(res, 500, 'Internal Server Error');
