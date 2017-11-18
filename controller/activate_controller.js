@@ -53,10 +53,9 @@ router.route('/')
 			res.json({ message: 'Internal Server Error' });
 		}
 	}, function(req, res, next){ // verify user entity exists and inactive
-		var key = {
-			kind: 'User_V1',
-			id: res.locals.decoded.data.id
-		};
+		const userId = res.locals.decoded.data.id;
+		const key = datastore.key(['User_V1', parseInt(userId) || userId]);
+
 		datastore.get(key, function(err, entity) {
 			if (err) {
 				console.error(err);
@@ -96,7 +95,7 @@ router.route('/')
 				try {
                     var auth_token = jwt.sign({
 						data: {
-							id : res.locals.user_key.id,
+							id : res.locals.user_key.id || res.locals.user_key.name,
 							email : res.locals.user_data.email,
 							type : 'user'
 						}

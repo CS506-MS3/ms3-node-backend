@@ -87,7 +87,7 @@ router.route('/')
 		try {
 			var auth_token = jwt.sign({
 				data: {
-					id : res.locals.user_key.id,
+					id : res.locals.user_key.id || res.locals.user_key.name,
 					email : res.locals.user_data.email,
 					type : 'user'
 				}
@@ -98,7 +98,7 @@ router.route('/')
 				token: auth_token,
 		    	user: {
 					email: res.locals.user_data.email,
-					id: res.locals.user_key.id,
+					id: res.locals.user_key.id || res.locals.user_key.name,
 					wishlist: res.locals.user_data.wishlist
 				}
 			});
