@@ -95,22 +95,18 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
         return typecheck || typeof input === 'undefined';
     }
 
-    function validateAccess(req, res, next) {
-        var date = new Date();
+    function validateAccess(req, res) {
+        const date = new Date();
         if (res.locals.tokenUser.access.vendor_next_payment_date < date) {
-            errorResponse.send(res, 403, 'Vendor Access Requried');
+            errorResponse.send(res, 403, 'Vendor Access Required');
         } else {
-            if (res.locals.tokenUser.properties.length === 0 || 
-                res.locals.tokenUser.access.vendor_additional_paid === true) {
-                next();
-            } else {
-                errorResponse.send(res, 403, 'Vendor Additional Fee Requried');
-            }
+            errorResponse.send(res, 402, 'Vendor Additional Fee Required');
         }
     }
 
     function create(req, res, next) {
         const timestamp = new Date().toJSON();
+        const date = new Date();
         const form = req.body;
         form.status = false;
         form.owner = res.locals.decoded.data.id;
@@ -119,7 +115,7 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
         form.updateTime = timestamp;
 
         const key = datastore.key([ENTITY_KEY]);
-        const userKey = datastore.key([CONFIG.ENTITY_KEYS.USERS, parseInt(res.locals.decoded.data.id)]);
+        const userKey = datastore.key([CONFIG.ENTITY_KEYS.USERS, parseInt(res.locals.decoded.data.id) || res.locals.decoded.data.id]);
 
         const property = {
             key: key,
@@ -140,6 +136,12 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
             }
         };
 
+        if (res.locals.tokenUser.access.vendor_next_payment_date > date &&
+            res.locals.tokenUser.properties.length === 0) {
+
+            property.data.status = true;
+        }
+
         datastore.save(property)
             .then(() => {
                 return datastore.get(userKey);
@@ -151,7 +153,6 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
                     user.properties = [key.id];
                 } else {
                     user.properties = [...user.properties, key.id];
-                    user.access.vendor_additional_paid = false;
                 }
 
                 return datastore.save({
@@ -160,10 +161,15 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
                 });
             })
             .then(() => {
-                res.status(201).json({
-                    message: 'Created'
-                });
-                return new Promise((resolve, reject) => resolve());
+
+                if (res.locals.tokenUser.access.vendor_next_payment_date > date &&
+                    res.locals.tokenUser.properties.length === 0) {
+                    res.status(201).json({
+                        message: 'Created'
+                    });
+                } else {
+                    next();
+                }
             })
             .catch((error) => {
                 errorResponse.send(res, 500, 'Internal Server Error', error);

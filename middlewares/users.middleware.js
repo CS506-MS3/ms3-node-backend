@@ -78,6 +78,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
                                     id: entity[datastore.KEY].id,
                                     title: entity.title,
                                     address: getAddressString(entity.address),
+                                    status: entity.status,
                                     startDate: entity.startDate,
                                     duration: entity.duration,
                                     price: entity.price
