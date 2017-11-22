@@ -262,8 +262,7 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
                         transaction.rollback();
                     } else {
                         const userKey = datastore.key([
-                            CONFIG.ENTITY_KEYS.USERS, parseInt(entity.owner)]);
-
+                            CONFIG.ENTITY_KEYS.USERS, parseInt(entity.owner) || entity.owner]);
                         return datastore.get(userKey);
                     }
                 } else {
@@ -317,7 +316,7 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
 
                     res.status(200).json({
                         list: entities.map(generatePropertySummary),
-                        cursor: meta.endCursor
+                        cursor: meta.moreResults !== 'NO_MORE_RESULTS' ? meta.endCursor : null
                     });
                 })
                 .catch((error) => {
