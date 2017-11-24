@@ -10,7 +10,9 @@ function resetPasswordController(
 
     router.route('/')
     	.post(
-    		resetPassword.getUserByEmail
+    		resetPassword.getUserByEmail,
+    		//resetPassword.passwordResetToken,
+    		mailer.sendPasswordResetLink
     	)
 
     return router;
