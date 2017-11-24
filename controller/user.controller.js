@@ -58,6 +58,24 @@ function userController(
             users.deactivate
         );
 
+    router.route('/:id/account-info')
+        .put(auth.checkAuth,
+            auth.checkInactiveToken,
+            permissions.getRoleGuard([
+                permissions.ROLES.USER,
+                permissions.ROLES.EMPLOYEE,
+                permissions.ROLES.SUPER_ADMIN
+            ]),
+            users.getUser,
+            permissions.runIf([
+                permissions.ROLES.USER
+            ], users.checkPassword),
+            permissions.runIf([
+                permissions.ROLES.USER
+            ], users.checkEmail),
+            user.updateUser
+        );
+
     return router;
 }
 

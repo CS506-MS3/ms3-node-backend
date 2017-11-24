@@ -239,8 +239,6 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     }
 
     function updateUser(req, res, next) {
-        res.locals.userData = entity;
-        res.locals.userKey = key;
 
         const key = res.locals.userKey
         res.locals.userData.phone = req.body.phone ? res.locals.userData.phone : req.body.phone
