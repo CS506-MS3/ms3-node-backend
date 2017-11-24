@@ -240,25 +240,29 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     }
 
     function updateUser(req, res, next) {
+        if (req.body.userData.phone === undefined || 
+            req.body.userData.notification === undefined || 
+            req.body.userData.notification.marketing === undefined) {
+            errorResponse.send(res, 400, 'Malformed Request');
+        } else {
+            const key = res.locals.userKey;
+            res.locals.userData.phone = req.body.phone;
+            res.locals.userData.notification.marketing = req.body.notification.marketing;
+            const entity = {
+                key: key,
+                excludeFromIndexes: ['phone', 'password_hash'],
+                data: res.locals.userData
+            };
 
-        const key = res.locals.userKey;
-        res.locals.userData.phone = req.body.phone ? req.body.phone : res.locals.userData.phone;
-        res.locals.userData.notification = req.body.notification ? req.body.notification : res.locals.userData.notification;
- 
-        const entity = {
-            key: key,
-            excludeFromIndexes: ['phone', 'password_hash'],
-            data: res.locals.userData
-        };
-
-        datastore.save(entity)
-            .then(() => {
-                res.status(200);
-                res.json({ message: 'Updated'});
-            })
-            .catch((error) => {
-                errorResponse.send(res, 500, 'Internal Server Error', error);
-            });
+            datastore.save(entity)
+                .then(() => {
+                    res.status(200);
+                    res.json({ message: 'Updated'});
+                })
+                .catch((error) => {
+                    errorResponse.send(res, 500, 'Internal Server Error', error);
+                });
+        }
     }
 }
 
