@@ -244,6 +244,10 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
             req.body.notification === undefined || 
             req.body.notification.marketing === undefined) {
             errorResponse.send(res, 400, 'Malformed Request');
+        } else if (typeof req.body.notification.marketing !== 'boolean' || 
+            typeof req.body.phone !== 'number' ||
+            req.body.phone.match(/\d/g).length !== 10) {
+            errorResponse.send(res, 400, 'Malformed Request');
         } else if (res.locals.userData.phone === req.body.phone &&
                    res.locals.userData.notification.marketing === req.body.notification.marketing) {
             res.status(200).json({message: 'No Changes'});
