@@ -73,7 +73,7 @@ function userController(
             permissions.runIf([
                 permissions.ROLES.USER
             ], users.checkEmail),
-            user.updateUser
+            users.updateUser
         );
 
     return router;

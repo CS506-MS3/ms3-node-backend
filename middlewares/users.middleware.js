@@ -15,7 +15,8 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
         checkEmail: checkEmail,
         checkCreateForm: checkCreateForm,
         checkDuplicate: checkDuplicate,
-        createUser: createUser
+        createUser: createUser,
+        updateUser: updateUser
     };
 
     function getList(req, res) {
