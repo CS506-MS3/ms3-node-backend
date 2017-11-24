@@ -17,7 +17,8 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
         checkCreateForm: checkCreateForm,
         checkDuplicate: checkDuplicate,
         createUser: createUser,
-        updateUser: updateUser
+        updateUser: updateUser,
+        resetPassword: resetPassword
     };
 
     function getList(req, res) {
@@ -322,6 +323,27 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
                 .catch((error) => {
                     errorResponse.send(res, 500, 'Internal Server Error', error);
                 });
+        }
+    }
+
+    function resetPassword(req, res, next) {
+        if (res.locals.userData.password_hash !== hashPassword(req.body.password)) {
+            res.locals.userData.password_hash = hashPassword(req.body.password);
+            const entity = {
+                key: res.locals.userKey,
+                excludeFromIndexes: ['phone', 'password_hash'],
+                data: res.locals.userData
+            };
+          
+            datastore.save(entity)
+                .then(() => {
+                    next();
+                })
+                .catch((error) => {
+                    errorResponse.send(res, 500, 'Internal Server Error', error);
+                });
+        } else {
+            res.status(200).json({message: 'No changes'});
         }
     }
 }
