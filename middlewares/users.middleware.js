@@ -18,7 +18,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
         checkDuplicate: checkDuplicate,
         createUser: createUser,
         updateUser: updateUser,
-        resetPassword: resetPassword
+        changePassword: changePassword
     };
 
     function getList(req, res) {
@@ -326,7 +326,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
         }
     }
 
-    function resetPassword(req, res, next) {
+    function changePassword(req, res, next) {
         if (req.body.new_password === undefined) {
             errorResponse.send(res, 400, 'Malformed Request');
         }else if (res.locals.userData.password_hash !== hashPassword(req.body.new_password)) {

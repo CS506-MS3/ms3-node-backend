@@ -65,7 +65,7 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
         });
     }
 
-    function sendPasswordResetNotification(req, res) {
+    function sendPasswordChangeNotification(req, res) {
         const mailOptions = {
             from: CONFIG.MAILER.FROM,
             to: res.locals.userData.email,
@@ -86,6 +86,6 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
     return {
         sendActivationLink,
         sendAccountInfoChangeNotification,
-        sendPasswordResetNotification
+        sendPasswordChangeNotification
     };
 });
