@@ -133,7 +133,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
             errorResponse.send(res, 400, 'Malformed Request');
         } else {
             const entity = res.locals.userData;
-            const password_hash = hashPassword(password);
+            const password_hash = hashPassword(req.body.password);
 
             if (entity.password_hash !== password_hash) {
 
@@ -234,6 +234,29 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
             })
             .catch((error) => {
 
+                errorResponse.send(res, 500, 'Internal Server Error', error);
+            });
+    }
+
+    function updateUser(req, res, next) {
+        res.locals.userData = entity;
+        res.locals.userKey = key;
+
+        const key = res.locals.userKey
+        res.locals.userData.phone = req.body.phone ? res.locals.userData.phone : req.body.phone
+        res.locals.userData.notification = req.body.notification ? res.locals.userData.notification : req.body.notification
+
+        const entity = {
+            key: key,
+            excludeFromIndexes: ['phone', 'password_hash'],
+            data: res.locals.userData
+        };
+
+        datastore.save(entity)
+            .then(() => {
+                next();
+            })
+            .catch((error) => {
                 errorResponse.send(res, 500, 'Internal Server Error', error);
             });
     }
