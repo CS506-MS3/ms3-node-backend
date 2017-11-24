@@ -162,7 +162,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
         const entity = res.locals.userData;
         const decoded = res.locals.decoded;
 
-        if (entity.email === decoded.email) {
+        if (entity.email === decoded.data.email) {
 
             next();
         } else {
@@ -241,10 +241,10 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
 
     function updateUser(req, res, next) {
 
-        const key = res.locals.userKey
-        res.locals.userData.phone = req.body.phone ? res.locals.userData.phone : req.body.phone
-        res.locals.userData.notification = req.body.notification ? res.locals.userData.notification : req.body.notification
-
+        const key = res.locals.userKey;
+        res.locals.userData.phone = req.body.phone ? req.body.phone : res.locals.userData.phone;
+        res.locals.userData.notification = req.body.notification ? req.body.notification : res.locals.userData.notification;
+ 
         const entity = {
             key: key,
             excludeFromIndexes: ['phone', 'password_hash'],
@@ -253,7 +253,8 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
 
         datastore.save(entity)
             .then(() => {
-                next();
+                res.status(200);
+                res.json({ message: 'Updated'});
             })
             .catch((error) => {
                 errorResponse.send(res, 500, 'Internal Server Error', error);
