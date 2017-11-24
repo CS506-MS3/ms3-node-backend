@@ -73,7 +73,8 @@ function userController(
             permissions.runIf([
                 permissions.ROLES.USER
             ], users.checkEmail),
-            users.updateUser
+            users.updateUser,
+            mailer.sendAccountInfoChangeNotification
         );
 
     return router;

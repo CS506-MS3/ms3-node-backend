@@ -3,6 +3,7 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
 
     const ACTIVATION_EMAIL_TITLE = 'MS3 Activation Link';
     const ACTIVATE_PAGE_URI = '/account/activate?token=';
+    const ACCOUNT_INFO_CHANGE_TITLE = 'Your MS3 Account Info Has Been Changed'
 
     const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -44,7 +45,28 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
         return url;
     }
 
+    function sendAccountInfoChangeNotification(req, res) {
+        const mailOptions = {
+            from: CONFIG.MAILER.FROM,
+            to: res.locals.userData.email,
+            subject: ACCOUNT_INFO_CHANGE_TITLE,
+            text: "Hi \
+            Our records indicate that you recently changed your account information. \
+            If this wasn’t you, please contact our Customer Service as soon as possible."
+        };
+
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log(error);
+                errorResponse.send(res, 500, 'Internal Server Error');
+            } else {
+                res.status(200).json({message: 'Updated'});
+            }
+        });
+    }
+
     return {
-        sendActivationLink
+        sendActivationLink,
+        sendAccountInfoChangeNotification
     };
 });
