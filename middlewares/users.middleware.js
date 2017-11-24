@@ -6,6 +6,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     return {
         getList: getList,
         getUser: getUser,
+        getUserInfo: getUserInfo,
         checkBlacklist: checkBlacklist,
         isActive: isActive,
         isInactive: isInactive,
@@ -55,6 +56,53 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
 
                 errorResponse.send(res, 500, 'Internal Server Error', error);
             })
+    }
+
+    function getUserInfo(req, res) {
+        if (res.locals.userData === undefined) {
+            errorResponse.send(res, 500, 'Internal Server Error');
+        } else {
+            delete res.locals.userData.password_hash;
+            delete res.locals.userData.stripe_id;
+
+            if (res.locals.userData.properties && res.locals.userData.properties.length > 0) {
+                const propertyKeys = res.locals.userData.properties.map((keyString) => {
+                    return datastore.key([CONFIG.ENTITY_KEYS.PROPERTIES, parseInt(keyString)]);
+                });
+
+                datastore.get(propertyKeys)
+                    .then((results) => {
+                        let entities = results[0];
+                        if (entities) {
+                            res.locals.userData.properties = entities.map((entity) => {
+                                return {
+                                    id: entity[datastore.KEY].id,
+                                    title: entity.title,
+                                    address: getAddressString(entity.address),
+                                    status: entity.status,
+                                    startDate: entity.startDate,
+                                    duration: entity.duration,
+                                    price: entity.price
+                                };
+                            });
+                        }
+                        res.status(200).json(res.locals.userData);
+                    })
+                    .catch((error) => {
+
+                        errorResponse.send(res, 500, 'Internal Server Error', error);
+                    });
+            } else {
+                res.locals.userData.properties = [];
+                res.status(200).json(res.locals.userData);
+            }
+
+        }
+    }
+
+    function getAddressString(address) {
+
+        return `${address.detailLevel2}, ${address.city}, ${address.state}`;
     }
 
     function checkBlacklist(req, res, next) {
@@ -204,7 +252,6 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
 
     function createUser(req, res, next) {
         const password = hashPassword(req.body.password);
-
         const key = datastore.key([ENTITY_KEY, req.body.email]);
         const entity = {
             key: key,
@@ -212,21 +259,29 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
             data: {
                 bid: {},
                 wishlist: [],
-                access: {},
-                phone: req.body.phone ? 0 : req.body.phone,
-                listing: [],
+                access: {
+                    customer_next_payment_date: null,
+                    vendor_next_payment_date: null,
+                    customer_payment_amount: 5,
+                    vendor_payment_amount: 5,
+                    vendor_additional_paid: false
+                },
+                phone: req.body.phone ? null : req.body.phone,
+                properties: [],
                 stripe_id: 0,
                 active: false,
                 email: req.body.email,
                 password_hash: password,
-                notification: req.body.notification
+                notification: {
+                    marketing: req.body.notification.marketing
+                }
             }
         };
 
         datastore.save(entity)
             .then(() => {
                 res.locals.activationData = {
-                    id: key.id,
+                    id: key.id || key.name,
                     email: req.body.email,
                     type: 'activation'
                 };

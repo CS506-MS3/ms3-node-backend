@@ -2,6 +2,7 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
     'use strict';
 
     const ACTIVATION_EMAIL_TITLE = 'MS3 Activation Link';
+
     const ACTIVATE_PAGE_URI = '/account/activate?token=';
     const ACCOUNT_INFO_CHANGE_TITLE = 'Your MS3 Account Info Has Been Changed'
 

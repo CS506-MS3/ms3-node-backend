@@ -14,7 +14,7 @@ build
 
 node_modules
 
-secret/secret.json
+secret
 .DS_Store
 .idea
 /datastore-credentials.json

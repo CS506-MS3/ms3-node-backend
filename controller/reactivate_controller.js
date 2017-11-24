@@ -47,7 +47,7 @@ router.route('/')
 							res.status(409);
 							res.json({ message: 'Account Already Active' });
 		            	} else {
-		            		res.locals.id = user_key.id;
+		            		res.locals.id = user_key.id || user_key.name;
 		            		res.locals.email = user_data.email;
 			                next();	
 		            	}

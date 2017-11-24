@@ -60,7 +60,9 @@ function blacklistMiddleware(datastore, errorResponse, CONFIG) {
             } else {
 
                 // Skip pagination for now.
-                res.status(200).json(entities);
+                res.status(200).json({
+                    list: entities
+                });
             }
         });
     }
@@ -71,7 +73,7 @@ function blacklistMiddleware(datastore, errorResponse, CONFIG) {
         datastore.delete(key)
             .then(() => {
 
-                res.status(200).json({id: key.id});
+                res.status(200).json({email: key.name});
             })
             .catch((error) => {
 

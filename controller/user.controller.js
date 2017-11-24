@@ -77,6 +77,24 @@ function userController(
             mailer.sendAccountInfoChangeNotification
         );
 
+    router.route('/:id/info')
+    .get(
+        auth.checkAuth,
+        auth.checkInactiveToken,
+        permissions.getRoleGuard([
+                permissions.ROLES.USER,
+                permissions.ROLES.EMPLOYEE,
+                permissions.ROLES.SUPER_ADMIN
+        ]),
+        permissions.getOwnerGuard(
+                "id",
+                permissions.ROLES.USER
+        ),
+        users.getUser,
+        users.getUserInfo
+    );
+
+
     return router;
 }
 
