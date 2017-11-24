@@ -1,5 +1,5 @@
 function resetPasswordController(
-    express, bodyParser, permissions, mailer, auth, users
+    express, bodyParser, permissions, mailer, auth, users, resetPassword
 ) {
     'use strict';
 
@@ -7,6 +7,11 @@ function resetPasswordController(
 
     router.use(bodyParser.urlencoded({extended: true}));
     router.use(bodyParser.json());
+
+    router.route('/')
+    	.post(
+    		resetPassword.getUserByEmail
+    	)
 
     return router;
 }

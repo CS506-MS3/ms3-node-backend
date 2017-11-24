@@ -25,6 +25,7 @@ const BlacklistMiddleware = require('./middlewares/blacklist.middleware');
 const PropertiesMiddleware = require('./middlewares/properties.middleware');
 const PricingsMiddleware = require('./middlewares/pricings.middleware');
 const AccessMiddleware = require('./middlewares/access.middleware');
+const ResetPasswordMiddleware = require('./middlewares/reset-password.middleware');
 
 /* Import Controllers */
 const EmployeesController = require('./controller/employees.controller');
@@ -83,6 +84,7 @@ const blacklist = BlacklistMiddleware(datastore, errorResponseService, CONFIG);
 const pricings = PricingsMiddleware(datastore, errorResponseService, CONFIG);
 const access = AccessMiddleware(datastore, errorResponseService, stripe, CONFIG);
 const properties = PropertiesMiddleware(datastore, errorResponseService, auth, CONFIG);
+const resetPassword = ResetPasswordMiddleware(datastore, errorResponseService, secret, crypto, jwt, CONFIG);
 
 
 /* Initialize Controllers */
@@ -93,7 +95,7 @@ const userController = UserController(express, bodyParser, permissions, mailer, 
 const pricingsController = PricingsController(express, pricings);
 const propertiesController = PropertiesController(express, bodyParser, permissions, auth, properties);
 const accessController = AccessController(express, bodyParser, auth, access, pricings);
-const resetPasswordController = ResetPasswordController(express, bodyParser, permissions, mailer, auth, users);
+const resetPasswordController = ResetPasswordController(express, bodyParser, permissions, mailer, auth, users, resetPassword);
 
 
 /* Add Routes */
