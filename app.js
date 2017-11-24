@@ -33,7 +33,8 @@ const BlacklistController = require('./controller/blacklist.controller');
 const UserController = require('./controller/user.controller');
 const PropertiesController = require('./controller/property.controller');
 const PricingsController = require('./controller/pricings.controller');
-const AccessController = require('./controller/access.controller')
+const AccessController = require('./controller/access.controller');
+const ResetPasswordController = require('./controller/reset-password.controller');
 
 /* Import Config Constants */
 const CONFIG = {
@@ -92,6 +93,7 @@ const userController = UserController(express, bodyParser, permissions, mailer, 
 const pricingsController = PricingsController(express, pricings);
 const propertiesController = PropertiesController(express, bodyParser, permissions, auth, properties);
 const accessController = AccessController(express, bodyParser, auth, access, pricings);
+const resetPasswordController = ResetPasswordController(express, bodyParser, permissions, mailer, auth, users);
 
 
 /* Add Routes */
@@ -101,6 +103,7 @@ router.use('/blacklist', blacklistController);
 router.use('/users', userController);
 router.use('/pricings', pricingsController);
 router.use('/properties', propertiesController);
+router.use('/reset-password', resetPasswordController);
 
 // TODO: REFACTOR CONTROLLERS
 const authController = require('./controller/auth_controller');
