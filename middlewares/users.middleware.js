@@ -16,7 +16,8 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
         checkEmail: checkEmail,
         checkCreateForm: checkCreateForm,
         checkDuplicate: checkDuplicate,
-        createUser: createUser
+        createUser: createUser,
+        updateUser: updateUser
     };
 
     function getList(req, res) {
@@ -181,7 +182,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
             errorResponse.send(res, 400, 'Malformed Request');
         } else {
             const entity = res.locals.userData;
-            const password_hash = hashPassword(password);
+            const password_hash = hashPassword(req.body.password);
 
             if (entity.password_hash !== password_hash) {
 
@@ -209,7 +210,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
         const entity = res.locals.userData;
         const decoded = res.locals.decoded;
 
-        if (entity.email === decoded.email) {
+        if (entity.email === decoded.data.email) {
 
             next();
         } else {
@@ -291,6 +292,37 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
 
                 errorResponse.send(res, 500, 'Internal Server Error', error);
             });
+    }
+
+    function updateUser(req, res, next) {
+        if (req.body.phone === undefined || 
+            req.body.notification === undefined || 
+            req.body.notification.marketing === undefined) {
+            errorResponse.send(res, 400, 'Malformed Request');
+        } else if (typeof req.body.notification.marketing !== 'boolean' ||
+            req.body.phone.toString().match(/\d/g).length !== 10) {
+            errorResponse.send(res, 400, 'Malformed Request');
+        } else if (res.locals.userData.phone === req.body.phone &&
+                   res.locals.userData.notification.marketing === req.body.notification.marketing) {
+            res.status(200).json({message: 'No Changes'});
+        } else {
+            const key = res.locals.userKey;
+            res.locals.userData.phone = req.body.phone;
+            res.locals.userData.notification.marketing = req.body.notification.marketing;
+            const entity = {
+                key: key,
+                excludeFromIndexes: ['phone', 'password_hash'],
+                data: res.locals.userData
+            };
+
+            datastore.save(entity)
+                .then(() => {
+                    next();
+                })
+                .catch((error) => {
+                    errorResponse.send(res, 500, 'Internal Server Error', error);
+                });
+        }
     }
 }
 
