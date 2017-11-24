@@ -240,9 +240,9 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     }
 
     function updateUser(req, res, next) {
-        if (req.body.userData.phone === undefined || 
-            req.body.userData.notification === undefined || 
-            req.body.userData.notification.marketing === undefined) {
+        if (req.body.phone === undefined || 
+            req.body.notification === undefined || 
+            req.body.notification.marketing === undefined) {
             errorResponse.send(res, 400, 'Malformed Request');
         } else {
             const key = res.locals.userKey;
