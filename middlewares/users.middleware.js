@@ -327,8 +327,10 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     }
 
     function resetPassword(req, res, next) {
-        if (res.locals.userData.password_hash !== hashPassword(req.body.password)) {
-            res.locals.userData.password_hash = hashPassword(req.body.password);
+        if (req.body.new_password === undefined) {
+            errorResponse.send(res, 400, 'Malformed Request');
+        }else if (res.locals.userData.password_hash !== hashPassword(req.body.new_password)) {
+            res.locals.userData.password_hash = hashPassword(req.body.new_password);
             const entity = {
                 key: res.locals.userKey,
                 excludeFromIndexes: ['phone', 'password_hash'],
