@@ -23,7 +23,7 @@ function resetPasswordMiddleware(datastore, errorResponse, secret, crypto, jwt, 
                         errorResponse.send(res, 404, 'User Not Found');
                     } else {
                     	res.locals.userKey = entities[0][datastore.KEY];
-                        res.locals.userData = entities[0][0];
+                        res.locals.userData = entities[0];
                         console.log(res.locals.userKey);
                         console.log(res.locals.userData);
                         next();
