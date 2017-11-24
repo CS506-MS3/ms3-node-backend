@@ -50,9 +50,7 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
             from: CONFIG.MAILER.FROM,
             to: res.locals.userData.email,
             subject: ACCOUNT_INFO_CHANGE_TITLE,
-            text: "Hi \
-            Our records indicate that you recently changed your account information. \
-            If this wasn’t you, please contact our Customer Service as soon as possible."
+            text: "Hi\n\nOur records indicate that you recently changed your account information.\n\nIf this wasn’t you, please contact our Customer Service as soon as possible."
         };
 
         transporter.sendMail(mailOptions, function (error, info) {

@@ -246,8 +246,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
             errorResponse.send(res, 400, 'Malformed Request');
         } else if (res.locals.userData.phone === req.body.phone &&
                    res.locals.userData.notification.marketing === req.body.notification.marketing) {
-            console.log("No change");
-            res.status(200).json({message: 'Updated'});
+            res.status(200).json({message: 'No Changes'});
         } else {
             const key = res.locals.userKey;
             res.locals.userData.phone = req.body.phone;
