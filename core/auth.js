@@ -11,7 +11,8 @@ function authMiddleware(datastore, errorResponse, secret, jwt, CONFIG) {
         authEmployee: authEmployee,
         checkAuth: checkAuth,
         checkInactiveToken: checkInactiveToken,
-        deactivateToken: deactivateToken
+        deactivateToken: deactivateToken,
+        passwordChangeDeactivateToken: passwordChangeDeactivateToken
     };
 
     function validateForm(req, res, next) {
@@ -140,8 +141,19 @@ function authMiddleware(datastore, errorResponse, secret, jwt, CONFIG) {
                 console.error(error);
                 res.status(204).send();
             });
+    }
 
-
+    function passwordChangeDeactivateToken(req, res, next) {
+        datastore.save({
+            key: res.locals.tokenKey,
+            data: res.locals.tokenData
+        })
+            .then(() => {
+                next();
+            })
+            .catch((error) => {
+                errorResponse.send(res, 500, 'Internal Server Error', error);
+            });
     }
 }
 

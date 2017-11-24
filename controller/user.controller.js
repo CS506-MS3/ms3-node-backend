@@ -108,6 +108,7 @@ function userController(
                 permissions.ROLES.USER
             ], users.checkEmail),
             users.changePassword,
+            auth.passwordChangeDeactivateToken,
             mailer.sendPasswordChangeNotification
         );
 
