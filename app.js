@@ -25,6 +25,7 @@ const BlacklistMiddleware = require('./middlewares/blacklist.middleware');
 const PropertiesMiddleware = require('./middlewares/properties.middleware');
 const PricingsMiddleware = require('./middlewares/pricings.middleware');
 const AccessMiddleware = require('./middlewares/access.middleware');
+const WishlistMiddleware = require('./middlewares/wishlist.middleware');
 
 /* Import Controllers */
 const EmployeesController = require('./controller/employees.controller');
@@ -33,7 +34,8 @@ const BlacklistController = require('./controller/blacklist.controller');
 const UserController = require('./controller/user.controller');
 const PropertiesController = require('./controller/property.controller');
 const PricingsController = require('./controller/pricings.controller');
-const AccessController = require('./controller/access.controller')
+const AccessController = require('./controller/access.controller');
+const WishlistController = require('./controller/wishlist.controller');
 
 /* Import Config Constants */
 const CONFIG = {
@@ -82,6 +84,7 @@ const blacklist = BlacklistMiddleware(datastore, errorResponseService, CONFIG);
 const pricings = PricingsMiddleware(datastore, errorResponseService, CONFIG);
 const access = AccessMiddleware(datastore, errorResponseService, stripe, CONFIG);
 const properties = PropertiesMiddleware(datastore, errorResponseService, auth, CONFIG);
+const wishlist = WishlistMiddleware(datastore, errorResponseService, CONFIG);
 
 
 /* Initialize Controllers */
@@ -92,6 +95,7 @@ const userController = UserController(express, bodyParser, permissions, mailer, 
 const pricingsController = PricingsController(express, pricings);
 const propertiesController = PropertiesController(express, bodyParser, permissions, auth, properties);
 const accessController = AccessController(express, bodyParser, auth, access, pricings);
+const wishlistController = WishlistController(express, bodyParser, auth, wishlist);
 
 
 /* Add Routes */
@@ -101,6 +105,7 @@ router.use('/blacklist', blacklistController);
 router.use('/users', userController);
 router.use('/pricings', pricingsController);
 router.use('/properties', propertiesController);
+router.use('/wishlist', wishlistController);
 
 // TODO: REFACTOR CONTROLLERS
 const authController = require('./controller/auth_controller');
