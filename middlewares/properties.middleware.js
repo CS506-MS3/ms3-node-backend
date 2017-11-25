@@ -3,6 +3,8 @@ const utils = require('../core/utils');
 function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
     'use strict';
 
+    const DEFAULT_INITIAL_COUNT = 10;
+    const DEFAULT_MORE_COUNT = 5;
     const ENTITY_KEY = CONFIG.ENTITY_KEYS.PROPERTIES;
     const OPTIONS_ENTITY_KEY = CONFIG.ENTITY_KEYS.PROPERTY_OPTIONS;
 
@@ -309,27 +311,88 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
     function getList(req, res) {
         let query = generateQuery(req);
         if (query) {
-            datastore.runQuery(query)
-                .then((response) => {
-                    const entities = response[0];
-                    const meta = response[1];
-
-                    res.status(200).json({
-                        list: entities.map(generatePropertySummary),
-                        cursor: meta.moreResults !== 'NO_MORE_RESULTS' ? meta.endCursor : null
-                    });
-                })
-                .catch((error) => {
-                    errorResponse.send(res, 500, 'Internal Server Error', error);
-                });
+            search(req, res, query, []);
         } else {
             errorResponse.send(res, 400, 'Required QueryParams Missing');
         }
     }
 
+    function search(req, res, query, prevSearch) {
+        datastore.runQuery(query)
+            .then((response) => {
+                const entities = [...prevSearch, ...filterResults(req.query, response[0]).map(generatePropertySummary)];
+                const meta = response[1];
+
+                if (canTerminateSearch(req, entities, meta)) {
+                    res.status(200).json({
+                        list: entities.slice(0,
+                            req.query.count
+                                ? parseInt(req.query.count)
+                                : req.query.cursor
+                                ? DEFAULT_MORE_COUNT
+                                : DEFAULT_MORE_COUNT),
+                        cursor: meta.moreResults !== 'NO_MORE_RESULTS' ? meta.endCursor : null
+                    });
+                } else {
+                    req.query.cursor = meta.endCursor;
+                    search(req, res, query, entities);
+                }
+            })
+            .catch((error) => {
+                errorResponse.send(res, 500, 'Internal Server Error', error);
+            });
+    }
+
+    function canTerminateSearch(req, entities, meta) {
+        if (meta.moreResults === 'NO_MORE_RESULTS') {
+            return true;
+        }
+        if (req.query.count) {
+            return entities.length >= parseInt(req.query.count);
+        } else if (req.query.cursor) {
+            return entities.length >= DEFAULT_MORE_COUNT;
+        } else {
+            return entities.length >= DEFAULT_INITIAL_COUNT;
+        }
+    }
+
+    function filterResults(query, entities) {
+        if (entities.length > 0) {
+            if (query.propertyType) {
+                entities = entities.filter((entity) => entity.address.type === query.propertyType);
+            }
+            if (query.roomType) {
+                entities = entities.filter((entity) => entity.roomType === query.roomType);
+            }
+            if (query.zipcode) {
+                entities = entities.filter((entity) => entity.address.zipcode === query.zipcode);
+            }
+            if (query.options) {
+                entities = query.options.match(/\d+/g).reduce((prev, id) => {
+
+                    return entities.filter((entity) => entity.options.includes(id));
+                }, entities);
+            }
+            if (query.startBefore) {
+                entities = entities.filter((entity) => entity.startDate <= query.startBefore);
+            }
+            if (query.endAfter) {
+                entities = entities.filter((entity) => entity.startDate >= query.endAfter);
+            }
+            if (query.minPrice) {
+                entities = entities.filter((entity) => entity.price >= query.minPrice);
+            }
+            if (query.endAfter) {
+                entities = entities.filter((entity) => entity.price <= query.maxPrice);
+            }
+
+            return entities;
+        } else {
+            return [];
+        }
+    }
+
     function generateQuery(req) {
-        const DEFAULT_INITIAL_COUNT = 10;
-        const DEFAULT_MORE_COUNT = 5;
         let entitiesLength;
         let query = datastore.createQuery(ENTITY_KEY);
         const sortByMap = {
