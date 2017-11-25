@@ -358,35 +358,39 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
 
     function filterResults(query, entities) {
         if (entities.length > 0) {
-            if (query.propertyType) {
-                entities = entities.filter((entity) => entity.address.type === query.propertyType);
-            }
-            if (query.roomType) {
-                entities = entities.filter((entity) => entity.roomType === query.roomType);
-            }
-            if (query.zipcode) {
-                entities = entities.filter((entity) => entity.address.zipcode === query.zipcode);
-            }
-            if (query.options) {
-                entities = query.options.match(/\d+/g).reduce((prev, id) => {
+            if (query.keyword) {
+                return entities.filter((entity) => entity.title.match(new RegExp(query.keyword, 'i')) !== null);
+            } else {
+                if (query.propertyType) {
+                    entities = entities.filter((entity) => entity.address.type === query.propertyType);
+                }
+                if (query.roomType) {
+                    entities = entities.filter((entity) => entity.roomType === query.roomType);
+                }
+                if (query.zipcode) {
+                    entities = entities.filter((entity) => entity.address.zipcode === query.zipcode);
+                }
+                if (query.options) {
+                    entities = query.options.match(/\d+/g).reduce((prev, id) => {
 
-                    return entities.filter((entity) => entity.options.includes(id));
-                }, entities);
-            }
-            if (query.startBefore) {
-                entities = entities.filter((entity) => entity.startDate <= query.startBefore);
-            }
-            if (query.endAfter) {
-                entities = entities.filter((entity) => entity.startDate >= query.endAfter);
-            }
-            if (query.minPrice) {
-                entities = entities.filter((entity) => entity.price >= query.minPrice);
-            }
-            if (query.endAfter) {
-                entities = entities.filter((entity) => entity.price <= query.maxPrice);
-            }
+                        return entities.filter((entity) => entity.options.includes(id));
+                    }, entities);
+                }
+                if (query.startBefore) {
+                    entities = entities.filter((entity) => entity.startDate <= query.startBefore);
+                }
+                if (query.endAfter) {
+                    entities = entities.filter((entity) => entity.startDate >= query.endAfter);
+                }
+                if (query.minPrice) {
+                    entities = entities.filter((entity) => entity.price >= query.minPrice);
+                }
+                if (query.endAfter) {
+                    entities = entities.filter((entity) => entity.price <= query.maxPrice);
+                }
 
-            return entities;
+                return entities;
+            }
         } else {
             return [];
         }
