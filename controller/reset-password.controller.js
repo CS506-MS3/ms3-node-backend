@@ -18,9 +18,9 @@ function resetPasswordController(
     	.put(
     		resetPassword.parseResetPasswordToken,
     		auth.checkInactiveToken,
+    		auth.passwordChangeDeactivateToken,
     		resetPassword.getUserByEmail,
     		resetPassword.resetPassword,
-    		auth.passwordChangeDeactivateToken,
     		mailer.sendPasswordChangeNotification
     	);
 
