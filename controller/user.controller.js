@@ -107,6 +107,7 @@ function userController(
             permissions.runIf([
                 permissions.ROLES.USER
             ], users.checkEmail),
+            auth.generateAuthToken,
             users.changePassword,
             auth.passwordChangeDeactivateToken,
             mailer.sendPasswordChangeNotification
