@@ -10,10 +10,17 @@ function resetPasswordController(
 
     router.route('/')
     	.post(
+    		resetPassword.requestResetPasswordLinkConditionCheck,
     		resetPassword.getUserByEmail,
-    		//resetPassword.passwordResetToken,
+    		resetPassword.passwordResetToken,
     		mailer.sendPasswordResetLink
     	)
+    	.put(
+    		resetPassword.parseResetPasswordToken,
+    		resetPassword.getUserByEmail,
+    		resetPassword.resetPassword,
+    		mailer.sendPasswordChangeNotification
+    	);
 
     return router;
 }
