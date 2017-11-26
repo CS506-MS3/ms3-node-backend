@@ -12,7 +12,8 @@ function authMiddleware(datastore, errorResponse, secret, jwt, CONFIG) {
         checkAuth: checkAuth,
         checkInactiveToken: checkInactiveToken,
         deactivateToken: deactivateToken,
-        passwordChangeDeactivateToken: passwordChangeDeactivateToken
+        passwordChangeDeactivateToken: passwordChangeDeactivateToken,
+        generateAuthToken: generateAuthToken
     };
 
     function validateForm(req, res, next) {
@@ -154,6 +155,24 @@ function authMiddleware(datastore, errorResponse, secret, jwt, CONFIG) {
             .catch((error) => {
                 errorResponse.send(res, 500, 'Internal Server Error', error);
             });
+    }
+
+    function generateAuthToken(req, res, next) {
+        try {
+            var auth_token = jwt.sign({
+                data: {
+                    id : res.locals.userKey.id || res.locals.userKey.name,
+                    email : res.locals.userData.email,
+                    type : 'user'
+                }
+            }, secret.token_secret, { expiresIn: '14d' });
+
+            res.locals.auth_token = auth_token;
+        } catch (err) {
+            console.error(err);
+            res.status(500);
+            res.json({ message: "Internal Server Error" });
+        }
     }
 }
 

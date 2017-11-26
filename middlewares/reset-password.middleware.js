@@ -99,7 +99,7 @@ function resetPasswordMiddleware(datastore, errorResponse, secret, crypto, jwt, 
                     errorResponse.send(res, 500, 'Internal Server Error', error);
                 });
         } else {
-            res.status(200).json({message: 'No changes'});
+            res.status(200).json({message: 'No changes', token: res.locals.auth_token });
         }
     }
 }

@@ -80,7 +80,11 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
                 console.log(error);
                 errorResponse.send(res, 500, 'Internal Server Error');
             } else {
-                res.status(200).json({message: 'Updated'});
+                if (res.locals.auth_token !== undefined) {
+                    res.status(200).json({message: 'Updated', token: res.locals.auth_token});
+                } else {
+                    res.status(200).json({message: 'Updated'});
+                }
             }
         });
     }
