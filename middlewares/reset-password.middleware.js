@@ -61,7 +61,7 @@ function resetPasswordMiddleware(datastore, errorResponse, secret, crypto, jwt, 
             try {
                 var token = req.body.token;
                 var decoded = jwt.verify(token, secret.token_secret);
-                if (decoded.data.id === undefined || decoded.data.email === undefined || decoded.data.type === undefined) {
+                if ((decoded.data.id === undefined && decoded.data.name === undefined) || decoded.data.email === undefined || decoded.data.type === undefined) {
                     throw new Error('Missing JWT Payload Property');
                 } else if (decoded.data.type !== 'password') {
                     throw new Error('Invalid Token Type');
@@ -72,7 +72,7 @@ function resetPasswordMiddleware(datastore, errorResponse, secret, crypto, jwt, 
                     next();
                 }
             } catch (error) {
-                console.error(err);
+                console.error(error);
                 res.status(401);
                 res.json({ message: 'Invalid Reset Password Token' });
             } 
