@@ -66,6 +66,7 @@ function resetPasswordMiddleware(datastore, errorResponse, secret, crypto, jwt, 
                 } else if (decoded.data.type !== 'password') {
                     throw new Error('Invalid Token Type');
                 } else {
+                    res.locals.token = token;
                     res.locals.decoded = decoded;
                     res.locals.email = decoded.data.email;
                     next();
