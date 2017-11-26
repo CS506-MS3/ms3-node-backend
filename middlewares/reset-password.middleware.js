@@ -42,14 +42,25 @@ function resetPasswordMiddleware(datastore, errorResponse, secret, crypto, jwt, 
     }
 
     function passwordResetToken(req, res, next) {
-    	const token = jwt.sign({
-            data: {
-                id: res.locals.userKey.id,
-                email: req.body.email,
-                type: 'password'
-            }
-        }, secret.token_secret, {expiresIn: TOKEN_EXPIRY});
-        res.locals.token = token;
+        if (res.locals.userKey.id !== undefined) {
+        	const token = jwt.sign({
+                data: {
+                    id: res.locals.userKey.id,
+                    email: req.body.email,
+                    type: 'password'
+                }
+            }, secret.token_secret, {expiresIn: TOKEN_EXPIRY});
+            res.locals.token = token;
+        } else {
+            const token = jwt.sign({
+                data: {
+                    name: res.locals.userKey.name,
+                    email: req.body.email,
+                    type: 'password'
+                }
+            }, secret.token_secret, {expiresIn: TOKEN_EXPIRY});
+            res.locals.token = token;
+        }
         next();
     }
 
