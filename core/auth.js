@@ -166,8 +166,8 @@ function authMiddleware(datastore, errorResponse, secret, jwt, CONFIG) {
                     type : 'user'
                 }
             }, secret.token_secret, { expiresIn: '14d' });
-
             res.locals.auth_token = auth_token;
+            next();
         } catch (err) {
             console.error(err);
             res.status(500);
