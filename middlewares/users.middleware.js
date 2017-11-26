@@ -66,38 +66,55 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
             delete res.locals.userData.password_hash;
             delete res.locals.userData.stripe_id;
 
+            let propertyKeys = [];
             if (res.locals.userData.properties && res.locals.userData.properties.length > 0) {
-                const propertyKeys = res.locals.userData.properties.map((keyString) => {
+                propertyKeys = [...propertyKeys, ...res.locals.userData.properties.map((keyString) => {
                     return datastore.key([CONFIG.ENTITY_KEYS.PROPERTIES, parseInt(keyString)]);
-                });
-
-                datastore.get(propertyKeys)
-                    .then((results) => {
-                        let entities = results[0];
-                        if (entities) {
-                            res.locals.userData.properties = entities.map((entity) => {
-                                return {
-                                    id: entity[datastore.KEY].id,
-                                    title: entity.title,
-                                    address: getAddressString(entity.address),
-                                    status: entity.status,
-                                    startDate: entity.startDate,
-                                    duration: entity.duration,
-                                    price: entity.price
-                                };
-                            });
-                        }
-                        res.status(200).json(res.locals.userData);
-                    })
-                    .catch((error) => {
-
-                        errorResponse.send(res, 500, 'Internal Server Error', error);
-                    });
-            } else {
-                res.locals.userData.properties = [];
-                res.status(200).json(res.locals.userData);
+                })];
             }
 
+            if (res.locals.userData.wishlist && res.locals.userData.wishlist.length > 0) {
+                propertyKeys = [...propertyKeys, ...res.locals.userData.wishlist.map((keyString) => {
+                    return datastore.key([CONFIG.ENTITY_KEYS.PROPERTIES, parseInt(keyString)]);
+                })];
+            }
+
+            datastore.get(propertyKeys)
+                .then((results) => {
+                    let entities = results[0];
+                    if (entities) {
+                        const properties = entities.map((entity) => {
+                            return {
+                                id: entity[datastore.KEY].id,
+                                title: entity.title,
+                                address: getAddressString(entity.address),
+                                status: entity.status,
+                                startDate: entity.startDate,
+                                duration: entity.duration,
+                                price: entity.price
+                            };
+                        });
+
+                        console.log(res.locals.userData.wishlist);
+                        console.log(properties);
+
+                        res.locals.userData.properties = properties.filter((property) => {
+                            return res.locals.userData.properties.includes(property.id);
+                        });
+                        res.locals.userData.wishlist = properties.filter((property) => {
+                            return res.locals.userData.wishlist.includes(parseInt(property.id));
+                        });
+
+                        res.status(200).json(res.locals.userData);
+                    } else {
+                        res.locals.userData.properties = [];
+                        res.locals.userData.wishlist = [];
+                    }
+                })
+                .catch((error) => {
+
+                    errorResponse.send(res, 500, 'Internal Server Error', error);
+                });
         }
     }
 
@@ -296,15 +313,15 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     }
 
     function updateUser(req, res, next) {
-        if (req.body.phone === undefined || 
-            req.body.notification === undefined || 
+        if (req.body.phone === undefined ||
+            req.body.notification === undefined ||
             req.body.notification.marketing === undefined) {
             errorResponse.send(res, 400, 'Malformed Request');
         } else if (typeof req.body.notification.marketing !== 'boolean' ||
             req.body.phone.toString().match(/\d/g).length !== 10) {
             errorResponse.send(res, 400, 'Malformed Request');
         } else if (res.locals.userData.phone === req.body.phone &&
-                   res.locals.userData.notification.marketing === req.body.notification.marketing) {
+            res.locals.userData.notification.marketing === req.body.notification.marketing) {
             res.status(200).json({message: 'No Changes'});
         } else {
             const key = res.locals.userKey;
