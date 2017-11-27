@@ -1,5 +1,5 @@
 function accessController(
-    express, bodyParser, auth, access, pricings
+    express, bodyParser, auth, access, pricings, mailer
 ) {
     'use strict';
 
@@ -27,7 +27,8 @@ function accessController(
             auth.checkInactiveToken,
             access.cancelSubscriptionCheck,
             access.cancelSubscription,
-            access.updateAccess
+            access.updateAccess,
+            mailer.sendSubscriptionCancelNotification
         );
 
     return router;

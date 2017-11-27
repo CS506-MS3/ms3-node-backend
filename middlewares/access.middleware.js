@@ -304,12 +304,11 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
         );
     }
 
-    function updateAccess(req, res) {
+    function updateAccess(req, res, next) {
         datastore.save(res.locals.tokenUser)
             .then(() => {
-                res.status(200).json({
-                    confirmation: res.locals.confirmation
-                });
+                res.locals.email = res.locals.tokenUser.email;
+                next();
             })
             .catch((error) => {
                 errorResponse.send(res, 500, 'Internal Server Error', error);
