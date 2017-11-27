@@ -66,6 +66,7 @@ router.route('/')
 			                    res.status(403);
 			                    res.json({ message: "Inactive account" });
 			                } else if (user_data.password_hash !== password_hash){
+			                	console.log(user_data);
 			                    res.status(401);
 			                    res.json({ message: "Invalid Email/Password Combo" });
 			                } else {

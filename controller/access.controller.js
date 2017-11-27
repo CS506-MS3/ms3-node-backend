@@ -11,7 +11,6 @@ function accessController(
     router.use(bodyParser.json());
         
     router.route('/')
-
         .post(auth.checkAuth,
             auth.checkInactiveToken,
             access.checkStripeId,
