@@ -25,11 +25,8 @@ const BlacklistMiddleware = require('./middlewares/blacklist.middleware');
 const PropertiesMiddleware = require('./middlewares/properties.middleware');
 const PricingsMiddleware = require('./middlewares/pricings.middleware');
 const AccessMiddleware = require('./middlewares/access.middleware');
-<<<<<<< HEAD
 const ResetPasswordMiddleware = require('./middlewares/reset-password.middleware');
-=======
 const WishlistMiddleware = require('./middlewares/wishlist.middleware');
->>>>>>> develop
 
 /* Import Controllers */
 const EmployeesController = require('./controller/employees.controller');
@@ -39,11 +36,8 @@ const UserController = require('./controller/user.controller');
 const PropertiesController = require('./controller/property.controller');
 const PricingsController = require('./controller/pricings.controller');
 const AccessController = require('./controller/access.controller');
-<<<<<<< HEAD
 const ResetPasswordController = require('./controller/reset-password.controller');
-=======
 const WishlistController = require('./controller/wishlist.controller');
->>>>>>> develop
 
 /* Import Config Constants */
 const CONFIG = {
@@ -103,7 +97,7 @@ const blacklistController = BlacklistController(express, bodyParser, permissions
 const userController = UserController(express, bodyParser, permissions, mailer, auth, users);
 const pricingsController = PricingsController(express, pricings);
 const propertiesController = PropertiesController(express, bodyParser, permissions, auth, properties);
-const accessController = AccessController(express, bodyParser, auth, access, pricings);
+const accessController = AccessController(express, bodyParser, auth, access, pricings, mailer);
 const resetPasswordController = ResetPasswordController(express, bodyParser, permissions, mailer, auth, users, resetPassword);
 const wishlistController = WishlistController(express, bodyParser, auth, wishlist);
 

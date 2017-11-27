@@ -1,5 +1,5 @@
 function accessController(
-    express, bodyParser, auth, access, pricings
+    express, bodyParser, auth, access, pricings, mailer
 ) {
     'use strict';
 
@@ -11,7 +11,6 @@ function accessController(
     router.use(bodyParser.json());
         
     router.route('/')
-
         .post(auth.checkAuth,
             auth.checkInactiveToken,
             access.checkStripeId,
@@ -22,6 +21,14 @@ function accessController(
             access.createSubscription,
             access.createCharge,
             access.updateUserEntity
+        )
+        .put(
+            auth.checkAuth,
+            auth.checkInactiveToken,
+            access.cancelSubscriptionCheck,
+            access.cancelSubscription,
+            access.updateAccess,
+            mailer.sendSubscriptionCancelNotification
         );
 
     return router;

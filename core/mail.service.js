@@ -4,6 +4,7 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
     const ACTIVATION_EMAIL_TITLE = 'MS3 Activation Link';
 
     const ACTIVATE_PAGE_URI = '/account/activate?token=';
+    const SUBSCRIPTION_CANCEL_TITLE = 'Your MS3 Account Subscription Has Been Cancelled';
     const RESET_PASSWORD_URI = '/reset-password?token=';
     const ACCOUNT_INFO_CHANGE_TITLE = 'Your MS3 Account Info Has Been Changed'
     const ACCOUNT_PASSWORD_CHANGE_TITLE = 'Your MS3 Account Password Has Been Changed'
@@ -67,6 +68,28 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
         });
     }
 
+    function sendSubscriptionCancelNotification(req, res) {
+        const mailOptions = {
+            from: CONFIG.MAILER.FROM,
+            to: res.locals.email,
+            subject: SUBSCRIPTION_CANCEL_TITLE,
+            text: "Hi\n\nOur records indicate that you recently cancelled your " + req.body.type.toLowerCase() + " subscription.\n\nIf this wasn’t you, please contact our Customer Service as soon as possible."
+        };
+        
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log(error);
+                errorResponse.send(res, 500, 'Internal Server Error');
+            } else {
+                if (res.locals.auth_token !== undefined) {
+                    res.status(200).json({message: 'Updated', token: res.locals.auth_token});
+                } else {
+                    res.status(200).json({message: 'Updated'});
+                }
+            }
+        });
+    }
+      
     function sendPasswordChangeNotification(req, res) {
         const mailOptions = {
             from: CONFIG.MAILER.FROM,
@@ -108,10 +131,11 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
             }
         });
     }
-
+  
     return {
         sendActivationLink,
         sendAccountInfoChangeNotification,
+        sendSubscriptionCancelNotification,
         sendPasswordChangeNotification,
         sendPasswordResetLink
     };
