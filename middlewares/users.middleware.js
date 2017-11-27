@@ -303,7 +303,7 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
         datastore.save(entity)
             .then(() => {
                 var email_hash = crypto.createHmac('sha256', secret.email_secret)
-                   .update(req.body.email)
+                   .update(req.body.email.toString())
                    .digest('hex');
 
                 res.locals.activationData = {
