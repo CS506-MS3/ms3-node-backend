@@ -22,7 +22,7 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
                 if (entity) {
                     res.locals.userData = entity;
                     res.locals.userKey = key;
-                    if (entity.stripe_id === 0) {
+                    if (entity.stripe_id === '0') {
                         res.locals.create_stripe_customer = true;
                     }
                     next();
@@ -257,8 +257,8 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
 
     function cancelSubscriptionCheck(req, res, next) {
         if (req.body.type === 'VENDOR') {
-            if (res.locals.tokenUser.stripe_id === 0 || 
-                res.locals.tokenUser.access.vendor_subscription_id === 0 ||
+            if (res.locals.tokenUser.stripe_id === '0' || 
+                res.locals.tokenUser.access.vendor_subscription_id === '0' ||
                 res.locals.tokenUser.access.vendor_next_payment_date < Date.now()
                 ) {
                 errorResponse.send(res, 403, 'No Existing Access');
@@ -267,8 +267,8 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
                 next();
             }
         } else if (req.body.type === 'CUSTOMER') {
-            if (res.locals.tokenUser.stripe_id === 0 ||
-                res.locals.tokenUser.access.customer_subscription_id === 0 ||
+            if (res.locals.tokenUser.stripe_id === '0' ||
+                res.locals.tokenUser.access.customer_subscription_id === '0' ||
                 res.locals.tokenUser.access.customer_next_payment_date < Date.now()
                 ) {
                 errorResponse.send(res, 403, 'No Existing Access');
@@ -291,10 +291,10 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
                     var yesterday = new Date();
                     yesterday.setDate(yesterday.getDate() - 1);  
                     if (req.body.type === 'VENDOR') {
-                        res.locals.tokenUser.access.vendor_subscription_id = 0;
+                        res.locals.tokenUser.access.vendor_subscription_id = '0';
                         res.locals.tokenUser.access.vendor_next_payment_date = yesterday;
                     } else if (req.body.type === 'CUSTOMER') {
-                        res.locals.tokenUser.access.customer_subscription_id = 0;
+                        res.locals.tokenUser.access.customer_subscription_id = '0';
                         res.locals.tokenUser.access.customer_next_payment_date = yesterday;
                     } else {
                         errorResponse.send(res, 500, 'Internal Server Error');
