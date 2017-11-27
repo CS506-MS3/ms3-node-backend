@@ -17,7 +17,8 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
         checkCreateForm: checkCreateForm,
         checkDuplicate: checkDuplicate,
         createUser: createUser,
-        updateUser: updateUser
+        updateUser: updateUser,
+        changePassword: changePassword
     };
 
     function getList(req, res) {
@@ -341,6 +342,30 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
                 });
         }
     }
+
+    function changePassword(req, res, next) {
+        if (req.body.new_password === undefined) {
+            errorResponse.send(res, 400, 'Malformed Request');
+        }else if (res.locals.userData.password_hash !== hashPassword(req.body.new_password)) {
+            res.locals.userData.password_hash = hashPassword(req.body.new_password);
+            const entity = {
+                key: res.locals.userKey,
+                excludeFromIndexes: ['phone', 'password_hash'],
+                data: res.locals.userData
+            };
+          
+            datastore.save(entity)
+                .then(() => {
+                    next();
+                })
+                .catch((error) => {
+                    errorResponse.send(res, 500, 'Internal Server Error', error);
+                });
+        } else {
+            res.status(200).json({message: 'No changes', token: res.locals.auth_token });
+        }
+    }
+
 }
 
 module.exports = usersMiddleware;

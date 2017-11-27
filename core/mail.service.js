@@ -4,7 +4,10 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
     const ACTIVATION_EMAIL_TITLE = 'MS3 Activation Link';
 
     const ACTIVATE_PAGE_URI = '/account/activate?token=';
+    const RESET_PASSWORD_URI = '/reset-password?token=';
     const ACCOUNT_INFO_CHANGE_TITLE = 'Your MS3 Account Info Has Been Changed'
+    const ACCOUNT_PASSWORD_CHANGE_TITLE = 'Your MS3 Account Password Has Been Changed'
+    const RESET_PASSWORD_TITLE = 'MS3 Password Change Request'
 
     const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -64,8 +67,52 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
         });
     }
 
+    function sendPasswordChangeNotification(req, res) {
+        const mailOptions = {
+            from: CONFIG.MAILER.FROM,
+            to: res.locals.userData.email,
+            subject: ACCOUNT_PASSWORD_CHANGE_TITLE,
+            text: "Hi\n\nOur records indicate that you recently changed your account password.\n\nIf this wasn’t you, please contact our Customer Service as soon as possible."
+        };
+
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log(error);
+                errorResponse.send(res, 500, 'Internal Server Error');
+            } else {
+                if (res.locals.auth_token !== undefined) {
+                    res.status(200).json({message: 'Updated', token: res.locals.auth_token});
+                } else {
+                    res.status(200).json({message: 'Updated'});
+                }
+            }
+        });
+    }
+
+    function sendPasswordResetLink(req, res) {
+        const resetPasswordLink = CONFIG.WEB_URL + RESET_PASSWORD_URI + res.locals.token;
+        const mailOptions = {
+            from: CONFIG.MAILER.FROM,
+            to: res.locals.userData.email,
+            subject: RESET_PASSWORD_TITLE,
+            text: 'Please click the following link to activate your account. ' + 
+            resetPasswordLink + ' The activation link will expire in 1 hour.'
+        };
+
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log(error);
+                errorResponse.send(res, 500, 'Internal Server Error');
+            } else {
+                res.status(200).json({message: 'Success'});
+            }
+        });
+    }
+
     return {
         sendActivationLink,
-        sendAccountInfoChangeNotification
+        sendAccountInfoChangeNotification,
+        sendPasswordChangeNotification,
+        sendPasswordResetLink
     };
 });
