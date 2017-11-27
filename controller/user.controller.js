@@ -94,6 +94,24 @@ function userController(
         users.getUserInfo
     );
 
+    router.route('/:id/password')
+        .put(auth.checkAuth,
+            auth.checkInactiveToken,
+            permissions.getRoleGuard([
+                permissions.ROLES.USER
+            ]),
+            users.getUser,
+            permissions.runIf([
+                permissions.ROLES.USER
+            ], users.checkPassword),
+            permissions.runIf([
+                permissions.ROLES.USER
+            ], users.checkEmail),
+            auth.generateAuthToken,
+            users.changePassword,
+            auth.passwordChangeDeactivateToken,
+            mailer.sendPasswordChangeNotification
+        );
 
     return router;
 }
