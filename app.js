@@ -93,8 +93,8 @@ const employeeAuthController = EmployeeAuthController(express, bodyParser, auth,
 const blacklistController = BlacklistController(express, bodyParser, permissions, auth, blacklist, CONFIG);
 const userController = UserController(express, bodyParser, permissions, mailer, auth, users);
 const pricingsController = PricingsController(express, pricings);
-const propertiesController = PropertiesController(express, bodyParser, permissions, auth, properties, mailer);
-const accessController = AccessController(express, bodyParser, auth, access, pricings);
+const propertiesController = PropertiesController(express, bodyParser, permissions, auth, properties);
+const accessController = AccessController(express, bodyParser, auth, access, pricings, mailer);
 const wishlistController = WishlistController(express, bodyParser, auth, wishlist);
 
 
