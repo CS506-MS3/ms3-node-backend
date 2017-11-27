@@ -10,7 +10,8 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
         createCharge: createCharge,
         updateUserEntity: updateUserEntity,
         cancelSubscription: cancelSubscription,
-        updateAccess: updateAccess
+        updateAccess: updateAccess,
+        cancelSubscriptionCheck: cancelSubscriptionCheck
     };
 
     function checkStripeId(req, res, next) {
@@ -263,6 +264,7 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
                 errorResponse.send(res, 403, 'No Existing Access');
             } else {
                 res.locals.subscription_id = res.locals.tokenUser.access.vendor_subscription_id;
+                next();
             }
         } else if (req.body.type === 'CUSTOMER') {
             if (res.locals.tokenUser.stripe_id === 0 ||
@@ -272,6 +274,7 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
                 errorResponse.send(res, 403, 'No Existing Access');
             } else {
                 res.locals.subscription_id = res.locals.tokenUser.access.customer_subscription_id;
+                next();
             }
         } else {
             errorResponse.send(res, 400, 'Malformed Request');

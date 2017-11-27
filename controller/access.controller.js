@@ -26,6 +26,7 @@ function accessController(
         .put(
             auth.checkAuth,
             auth.checkInactiveToken,
+            access.cancelSubscriptionCheck,
             access.cancelSubscription,
             access.updateAccess
         );
