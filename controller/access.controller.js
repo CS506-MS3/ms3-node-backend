@@ -22,6 +22,12 @@ function accessController(
             access.createSubscription,
             access.createCharge,
             access.updateUserEntity
+        )
+        .put(
+            auth.checkAuth,
+            auth.checkInactiveToken,
+            access.cancelSubscription,
+            access.updateAccess
         );
 
     return router;

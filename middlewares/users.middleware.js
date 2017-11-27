@@ -270,6 +270,8 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
     function createUser(req, res, next) {
         const password = hashPassword(req.body.password);
         const key = datastore.key([ENTITY_KEY, req.body.email]);
+        var yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);  
         const entity = {
             key: key,
             excludeFromIndexes: ['phone', 'password_hash'],
@@ -277,8 +279,10 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
                 bid: {},
                 wishlist: [],
                 access: {
-                    customer_next_payment_date: null,
-                    vendor_next_payment_date: null,
+                    customer_next_payment_date: yesterday,
+                    vendor_next_payment_date: yesterday,
+                    vendor_subscription_id : 0,
+                    customer_subscription_id : 0,
                     customer_payment_amount: 5,
                     vendor_payment_amount: 5,
                     vendor_additional_paid: false

@@ -8,7 +8,9 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
         validatePaymentType: validatePaymentType,
         createSubscription: createSubscription,
         createCharge: createCharge,
-        updateUserEntity: updateUserEntity
+        updateUserEntity: updateUserEntity,
+        cancelSubscription: cancelSubscription,
+        updateAccess: updateAccess
     };
 
     function checkStripeId(req, res, next) {
@@ -137,10 +139,12 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
                     if (res.locals.vendor === true) {
                         res.locals.userData.access.vendor_payment_amount = subscription.plan.amount / CENTS_PER_DOLLAR;
                         res.locals.userData.access.vendor_next_payment_date = new Date(subscription.current_period_end * MILLISECONDS_PER_SECOND);
+                        res.locals.userData.access.vendor_subscription_id = subscription.id;
                         next();
                     } else if (res.locals.customer === true) {
                         res.locals.userData.access.customer_payment_amount = subscription.plan.amount / CENTS_PER_DOLLAR;
                         res.locals.userData.access.customer_next_payment_date = new Date(subscription.current_period_end * MILLISECONDS_PER_SECOND);
+                        res.locals.userData.access.customer_subscription_id = subscription.id;
                         next();
                     } else {
                         errorResponse.send(res, 500, 'Internal Server Error');
@@ -248,6 +252,67 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
                     });
             }
         }
+    }
+
+    function cancelSubscriptionCheck(req, res, next) {
+        if (req.body.type === 'VENDOR') {
+            if (res.locals.tokenUser.stripe_id === 0 || 
+                res.locals.tokenUser.access.vendor_subscription_id === 0 ||
+                res.locals.tokenUser.access.vendor_next_payment_date < Date.now()
+                ) {
+                errorResponse.send(res, 403, 'No Existing Access');
+            } else {
+                res.locals.subscription_id = res.locals.tokenUser.access.vendor_subscription_id;
+            }
+        } else if (req.body.type === 'CUSTOMER') {
+            if (res.locals.tokenUser.stripe_id === 0 ||
+                res.locals.tokenUser.access.customer_subscription_id === 0 ||
+                res.locals.tokenUser.access.customer_next_payment_date < Date.now()
+                ) {
+                errorResponse.send(res, 403, 'No Existing Access');
+            } else {
+                res.locals.subscription_id = res.locals.tokenUser.access.customer_subscription_id;
+            }
+        } else {
+            errorResponse.send(res, 400, 'Malformed Request');
+        }
+    }
+
+    function cancelSubscription(req, res, next) {
+        stripe.subscriptions.del(
+            res.locals.subscription_id,
+            function(err, confirmation) {
+                if (err) {
+                    errorResponse.send(res, 500, 'Internal Server Error', err);
+                } else {
+                    var yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);  
+                    if (req.body.type === 'VENDOR') {
+                        res.locals.tokenUser.access.vendor_subscription_id = 0;
+                        res.locals.tokenUser.access.vendor_next_payment_date = yesterday;
+                    } else if (req.body.type === 'CUSTOMER') {
+                        res.locals.tokenUser.access.customer_subscription_id = 0;
+                        res.locals.tokenUser.access.customer_next_payment_date = yesterday;
+                    } else {
+                        errorResponse.send(res, 500, 'Internal Server Error');
+                    }
+                    res.locals.confirmation = confirmation;
+                    next();
+                }
+            }
+        );
+    }
+
+    function updateAccess(req, res) {
+        datastore.save(res.locals.tokenUser)
+            .then(() => {
+                res.status(200).json({
+                    confirmation: res.locals.confirmation
+                });
+            })
+            .catch((error) => {
+                errorResponse.send(res, 500, 'Internal Server Error', error);
+            });
     }
 }
 
