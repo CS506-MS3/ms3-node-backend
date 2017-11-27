@@ -258,8 +258,7 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
     function cancelSubscriptionCheck(req, res, next) {
         if (req.body.type === 'VENDOR') {
             if (res.locals.tokenUser.stripe_id === '0' || 
-                res.locals.tokenUser.access.vendor_subscription_id === '0' ||
-                res.locals.tokenUser.access.vendor_next_payment_date < Date.now()
+                res.locals.tokenUser.access.vendor_subscription_id === '0'
                 ) {
                 errorResponse.send(res, 403, 'No Existing Access');
             } else {
@@ -268,8 +267,7 @@ function accessMiddleware(datastore, errorResponse, stripe, CONFIG) {
             }
         } else if (req.body.type === 'CUSTOMER') {
             if (res.locals.tokenUser.stripe_id === '0' ||
-                res.locals.tokenUser.access.customer_subscription_id === '0' ||
-                res.locals.tokenUser.access.customer_next_payment_date < Date.now()
+                res.locals.tokenUser.access.customer_subscription_id === '0'
                 ) {
                 errorResponse.send(res, 403, 'No Existing Access');
             } else {
