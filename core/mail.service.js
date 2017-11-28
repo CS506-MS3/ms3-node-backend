@@ -3,9 +3,9 @@ module.exports = (function (nodemailer, tokenizer, secret, CONFIG) {
 
     const ACTIVATION_EMAIL_TITLE = 'MS3 Activation Link';
 
-    const ACTIVATE_PAGE_URI = '/account/activate?token=';
+    const ACTIVATE_PAGE_URI = '/#/account/activate?token=';
     const SUBSCRIPTION_CANCEL_TITLE = 'Your MS3 Account Subscription Has Been Cancelled';
-    const RESET_PASSWORD_URI = '/reset-password?token=';
+    const RESET_PASSWORD_URI = '/#/reset-password?token=';
     const ACCOUNT_INFO_CHANGE_TITLE = 'Your MS3 Account Info Has Been Changed'
     const ACCOUNT_PASSWORD_CHANGE_TITLE = 'Your MS3 Account Password Has Been Changed'
     const RESET_PASSWORD_TITLE = 'MS3 Password Change Request'
