@@ -1,6 +1,6 @@
 {
 	"info": {
-		"name": "Testing MS3 Backend",
+		"name": "MS3 Backend",
 		"_postman_id": "513f85a6-ba11-e93c-dbfe-0cfacfa5f3bd",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -244,6 +244,177 @@
 					]
 				},
 				"description": "POST /api/reactivate"
+			},
+			"response": []
+		},
+		{
+			"name": "User Story 7 - Reset Password - Request Reset Password Email",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"email\" : \"Your-NetID@wisc.edu\"\n}"
+				},
+				"url": {
+					"raw": "https://www.madisons3.com/api/reset-password",
+					"protocol": "https",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"reset-password"
+					]
+				},
+				"description": "POST /api/reset-password"
+			},
+			"response": []
+		},
+		{
+			"name": "User Story 7 - Reseet Password - Reset Password",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"token\" : \"Your Reset Password Token (From Email)\",\n\t\"password\" : \"Your Old Password\",\n\t\"new_password\" : \"Your New Password\"\n}"
+				},
+				"url": {
+					"raw": "http://www.madisons3.com/api/reset-password",
+					"protocol": "http",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"reset-password"
+					]
+				},
+				"description": "PUT /api/reset-password"
+			},
+			"response": []
+		},
+		{
+			"name": "User Story 8 - Change Password",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "token",
+						"value": "Your_Auth_Token"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"passowrd\" : \"Your Old Password\",\n\t\"new_password\" : \"Your New Password\"\n}"
+				},
+				"url": {
+					"raw": "http://www.madisons3.com/api/users/Your_User_Id/password",
+					"protocol": "http",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						"Your_User_Id",
+						"password"
+					]
+				},
+				"description": "PUT /api/users/:id/password"
+			},
+			"response": []
+		},
+		{
+			"name": "User Story 9 - Change password",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "token",
+						"value": "Your_Auth_Token"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"passowrd\" : \"Your Old Password\",\n\t\"new_password\" : \"Your New Password\",\n\t\"token\" : \"Reset Password Token\"\n}"
+				},
+				"url": {
+					"raw": "http://www.madisons3.com/api/users/Your_User_Id/password",
+					"protocol": "http",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						"Your_User_Id",
+						"password"
+					]
+				},
+				"description": "PUT /api/users/:id/password"
+			},
+			"response": []
+		},
+		{
+			"name": "User Story 15 - Cancel Access",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "token",
+						"value": "Your_Auth_Token"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"type\" : \"VENDOR\"\n}"
+				},
+				"url": {
+					"raw": "http://www.madisons3.com/api/access",
+					"protocol": "http",
+					"host": [
+						"www",
+						"madisons3",
+						"com"
+					],
+					"path": [
+						"api",
+						"access"
+					]
+				},
+				"description": "PUT /api/access"
 			},
 			"response": []
 		}
