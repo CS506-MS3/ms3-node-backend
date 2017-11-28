@@ -57,23 +57,36 @@ Put secret.json file under /secret/secret.json
 
 ```
 - app.js
+- config
+  |-token.config.js
+  |-mailer.config.js
+  |-...
 - controller
-  |-user_controller.js
-  |-activate_controller.js
-  |-reactivate_controller.js
-  |-auth_controller.js
+  |-user.controller.js
+  |-pricings.controller.js
+  |-access.controller.js
+  |-...
+- core
+  |-auth.js
+  |-logger.js
+  |-permissions.js
+  |-...
+- environments
+  |-environment.js
+- middlewares
+  |-access.middleware.js
+  |-blacklist.middleware.js
   |-...
 - node_modules
-  |-...
-- script
   |-...
 - test
   |-...
 - secret
   |-secret.json
-- Testing MS3 Backend.postman_collection.json
+- MS3 Backend Iteartion 2.postman_collection.json
 - package-lock.json
 - package.json
+- provision.js
 ```
 
 ## Run Server
