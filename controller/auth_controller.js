@@ -5,16 +5,14 @@ var secret = require('../secret/secret.json')
 var jwt = require('jsonwebtoken');
 var crypto = require('crypto');
 
+const CONFIG = {
+	ENTITY_KEYS: require('../configs/entity-keys.constants')
+};
 const Datastore = require('@google-cloud/datastore');
 const datastore = Datastore();
 
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
-
-router.use(function timeLog (req, res, next) {
-  console.log('In Auth Controller @ Time: ', Date.now());
-  next();
-});
 
 router.route('/')
 	
@@ -68,6 +66,7 @@ router.route('/')
 			                    res.status(403);
 			                    res.json({ message: "Inactive account" });
 			                } else if (user_data.password_hash !== password_hash){
+			                	console.log(user_data);
 			                    res.status(401);
 			                    res.json({ message: "Invalid Email/Password Combo" });
 			                } else {
@@ -92,21 +91,58 @@ router.route('/')
 		try {
 			var auth_token = jwt.sign({
 				data: {
-					id : res.locals.user_key.id,
+					id : res.locals.user_key.id || res.locals.user_key.name,
 					email : res.locals.user_data.email,
 					type : 'user'
 				}
 			}, secret.token_secret, { expiresIn: '14d' });
 
-			res.status(200);
-			res.json({
-				token: auth_token,
-		    	user: {
-					email: res.locals.user_data.email,
-					id: res.locals.user_key.id,
-					wishlist: res.locals.user_data.wishlist
-				}
-			});
+			if (res.locals.user_data.wishlist.length > 0) {
+				const propertyKeys = res.locals.user_data.wishlist.map((keyString) => {
+                    return datastore.key([CONFIG.ENTITY_KEYS.PROPERTIES, parseInt(keyString)]);
+                });
+
+                datastore.get(propertyKeys)
+                    .then((results) => {
+                        let entities = results[0];
+                        if (entities) {
+                            res.locals.user_data.wishlist = entities.map((entity) => {
+                                return {
+                                    id: entity[datastore.KEY].id,
+                                    title: entity.title,
+                                    address: getAddressString(entity.address),
+                                    status: entity.status,
+                                    startDate: entity.startDate,
+                                    duration: entity.duration,
+                                    price: entity.price
+                                };
+                            });
+                        }
+                        res.status(200).json({
+                            token: auth_token,
+                            user: {
+                                email: res.locals.user_data.email,
+                                id: res.locals.user_key.id || res.locals.user_key.name,
+                                wishlist: res.locals.user_data.wishlist
+                            }
+                        });
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        res.status(500);
+                        res.json({ message: "Internal Server Error" });
+                    });
+			} else {
+                res.status(200);
+                res.json({
+                    token: auth_token,
+                    user: {
+                        email: res.locals.user_data.email,
+                        id: res.locals.user_key.id || res.locals.user_key.name,
+                        wishlist: res.locals.user_data.wishlist
+                    }
+                });
+			}
 		} catch (err) {
 			console.error(err);
 			res.status(500);
@@ -165,5 +201,10 @@ router.route('/')
 		res.status(204).send();
 	});
 
+
+function getAddressString(address) {
+
+    return `${address.detailLevel2}, ${address.city}, ${address.state}`;
+}
 
 module.exports = router;

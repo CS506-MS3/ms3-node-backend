@@ -19,11 +19,6 @@ var transporter = nodemailer.createTransport({
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
-router.use(function timeLog (req, res, next) {
-  console.log('In Reactivate Controller @ Time: ', Date.now());
-  next();
-});
-
 router.route('/')
 	
 	.post(function(req, res, next){ // verify request body
@@ -52,7 +47,7 @@ router.route('/')
 							res.status(409);
 							res.json({ message: 'Account Already Active' });
 		            	} else {
-		            		res.locals.id = user_key.id;
+		            		res.locals.id = user_key.id || user_key.name;
 		            		res.locals.email = user_data.email;
 			                next();	
 		            	}
