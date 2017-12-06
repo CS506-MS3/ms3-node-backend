@@ -309,6 +309,9 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
     }
 
     function getList(req, res) {
+        if (req.query.cursor) {
+            req.query.cursor = decodeURIComponent(req.query.cursor);
+        }
         let query = generateQuery(req);
         if (query) {
             search(req, res, query, []);
@@ -330,7 +333,7 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
                                 ? parseInt(req.query.count)
                                 : req.query.cursor
                                 ? DEFAULT_MORE_COUNT
-                                : DEFAULT_MORE_COUNT),
+                                : DEFAULT_INITIAL_COUNT),
                         cursor: meta.moreResults !== 'NO_MORE_RESULTS' ? meta.endCursor : null
                     });
                 } else {
