@@ -67,6 +67,12 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
             delete res.locals.userData.stripe_id;
 
             let propertyKeys = [];
+            if (res.locals.userData.properties && res.locals.userData.properties.length === 0) {
+                res.locals.userData.properties = [];
+            }
+            if (res.locals.userData.wishlist && res.locals.userData.wishlist.length === 0) {
+                res.locals.userData.wishlist = [];
+            }
             if (res.locals.userData.properties && res.locals.userData.properties.length > 0) {
                 propertyKeys = [...propertyKeys, ...res.locals.userData.properties.map((keyString) => {
                     return datastore.key([CONFIG.ENTITY_KEYS.PROPERTIES, parseInt(keyString)]);
