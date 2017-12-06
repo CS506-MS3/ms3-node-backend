@@ -312,6 +312,14 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
         if (req.query.cursor) {
             req.query.cursor = decodeURIComponent(req.query.cursor);
         }
+        if (req.query.count) {
+            req.query.count = parseInt(req.query.count);
+        } else if (req.query.cursor) {
+            req.query.count = DEFAULT_MORE_COUNT;
+        } else {
+            req.query.count = DEFAULT_INITIAL_COUNT;
+        }
+
         let query = generateQuery(req);
         if (query) {
             search(req, res, query, []);
@@ -323,22 +331,27 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
     function search(req, res, query, prevSearch) {
         datastore.runQuery(query)
             .then((response) => {
-                const entities = [...prevSearch, ...filterResults(req.query, response[0]).map(generatePropertySummary)];
-                const meta = response[1];
 
-                if (canTerminateSearch(req, entities, meta)) {
+                const meta = response[1];
+                const results = filterResults(req.query, response[0]).map(generatePropertySummary);
+                const entities = [...prevSearch, ...results];
+                req.query.count = req.query.count - results.length;
+                if (canTerminateSearch(req, meta)) {
                     res.status(200).json({
-                        list: entities.slice(0,
-                            req.query.count
-                                ? parseInt(req.query.count)
-                                : req.query.cursor
-                                ? DEFAULT_MORE_COUNT
-                                : DEFAULT_INITIAL_COUNT),
+                        list: entities,
                         cursor: meta.moreResults !== 'NO_MORE_RESULTS' ? meta.endCursor : null
                     });
                 } else {
                     req.query.cursor = meta.endCursor;
-                    search(req, res, query, entities);
+                    let query = generateQuery(req);
+                    if (query) {
+                        search(req, res, query, entities);
+                    } else {
+                        res.status(200).json({
+                            list: entities,
+                            cursor: meta.moreResults !== 'NO_MORE_RESULTS' ? meta.endCursor : null
+                        });
+                    }
                 }
             })
             .catch((error) => {
@@ -346,17 +359,8 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
             });
     }
 
-    function canTerminateSearch(req, entities, meta) {
-        if (meta.moreResults === 'NO_MORE_RESULTS') {
-            return true;
-        }
-        if (req.query.count) {
-            return entities.length >= parseInt(req.query.count);
-        } else if (req.query.cursor) {
-            return entities.length >= DEFAULT_MORE_COUNT;
-        } else {
-            return entities.length >= DEFAULT_INITIAL_COUNT;
-        }
+    function canTerminateSearch(req, meta) {
+        return meta.moreResults === 'NO_MORE_RESULTS' || req.query.count <= 0;
     }
 
     function filterResults(query, entities) {
@@ -380,18 +384,21 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
                     }, entities);
                 }
                 if (query.startBefore) {
-                    entities = entities.filter((entity) => entity.startDate <= query.startBefore);
+                    entities = entities.filter((entity) => new Date(entity.startDate) <= new Date(query.startBefore));
                 }
                 if (query.endAfter) {
-                    entities = entities.filter((entity) => entity.startDate >= query.endAfter);
+                    entities = entities.filter((entity) => {
+                        let endDate = new Date(entity.startDate);
+                        endDate.setMonth(endDate.getMonth() + parseInt(entity.duration));
+                        return endDate >= new Date(query.endAfter);
+                    });
                 }
                 if (query.minPrice) {
-                    entities = entities.filter((entity) => entity.price >= query.minPrice);
+                    entities = entities.filter((entity) => parseInt(entity.price) >= parseInt(query.minPrice));
                 }
-                if (query.endAfter) {
-                    entities = entities.filter((entity) => entity.price <= query.maxPrice);
+                if (query.maxPrice) {
+                    entities = entities.filter((entity) => parseInt(entity.price) <= parseInt(query.maxPrice));
                 }
-
                 return entities;
             }
         } else {
@@ -400,7 +407,6 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
     }
 
     function generateQuery(req) {
-        let entitiesLength;
         let query = datastore.createQuery(ENTITY_KEY);
         const sortByMap = {
             price: 'price',
@@ -412,15 +418,7 @@ function propertiesMiddleware(datastore, errorResponse, auth, CONFIG) {
             query = query.order(sortByMap[req.query.sortBy], {
                 descending: req.query.direction === 'DOWN'
             });
-
-            if (req.query.count) {
-                entitiesLength = parseInt(req.query.count);
-            } else if (req.query.cursor) {
-                entitiesLength = DEFAULT_MORE_COUNT;
-            } else {
-                entitiesLength = DEFAULT_INITIAL_COUNT;
-            }
-            query = query.limit(entitiesLength);
+            query = query.limit(req.query.count);
 
             if (req.query.cursor) {
                 query = query.start(req.query.cursor);
