@@ -85,42 +85,44 @@ function usersMiddleware(datastore, errorResponse, secret, crypto, CONFIG) {
                 })];
             }
 
-            datastore.get(propertyKeys)
-                .then((results) => {
-                    let entities = results[0];
-                    if (entities) {
-                        const properties = entities.map((entity) => {
-                            return {
-                                id: entity[datastore.KEY].id,
-                                title: entity.title,
-                                address: getAddressString(entity.address),
-                                status: entity.status,
-                                startDate: entity.startDate,
-                                duration: entity.duration,
-                                price: entity.price
-                            };
-                        });
+            if (propertyKeys.length > 0) {
+                datastore.get(propertyKeys)
+                    .then((results) => {
+                        let entities = results[0];
+                        if (entities) {
+                            const properties = entities.map((entity) => {
+                                return {
+                                    id: entity[datastore.KEY].id,
+                                    title: entity.title,
+                                    address: getAddressString(entity.address),
+                                    status: entity.status,
+                                    startDate: entity.startDate,
+                                    duration: entity.duration,
+                                    price: entity.price
+                                };
+                            });
 
-                        console.log(res.locals.userData.wishlist);
-                        console.log(properties);
+                            res.locals.userData.properties = properties.filter((property) => {
+                                return res.locals.userData.properties.includes(property.id);
+                            });
+                            res.locals.userData.wishlist = properties.filter((property) => {
+                                return res.locals.userData.wishlist.includes(parseInt(property.id));
+                            });
 
-                        res.locals.userData.properties = properties.filter((property) => {
-                            return res.locals.userData.properties.includes(property.id);
-                        });
-                        res.locals.userData.wishlist = properties.filter((property) => {
-                            return res.locals.userData.wishlist.includes(parseInt(property.id));
-                        });
+                            res.status(200).json(res.locals.userData);
+                        } else {
+                            res.locals.userData.properties = [];
+                            res.locals.userData.wishlist = [];
+                        }
+                    })
+                    .catch((error) => {
 
-                        res.status(200).json(res.locals.userData);
-                    } else {
-                        res.locals.userData.properties = [];
-                        res.locals.userData.wishlist = [];
-                    }
-                })
-                .catch((error) => {
+                        errorResponse.send(res, 500, 'Internal Server Error', error);
+                    });
+            } else {
+                res.status(200).json(res.locals.userData);
+            }
 
-                    errorResponse.send(res, 500, 'Internal Server Error', error);
-                });
         }
     }
 
